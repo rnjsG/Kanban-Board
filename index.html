@@ -240,6 +240,15 @@
             border-radius: 50%;
         }
 
+        .online-count-badge {
+            font-size: 11px;
+            background: #E2E8F0;
+            color: #475569;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 4px;
+        }
+
         .noti-btn {
             background: #F1F5F9;
             border: 1px solid var(--border-color);
@@ -266,7 +275,7 @@
             background-color: #FAFAFA;
         }
 
-        /* 메시지 레이아웃 (시간 표시 포함) */
+        /* 메시지 레이아웃 (시간 및 카톡 스타일 안 읽은 수 표시) */
         .msg-wrapper {
             display: flex;
             flex-direction: column;
@@ -296,11 +305,28 @@
             flex-direction: row-reverse;
         }
 
+        /* 메시지 메타 정보(시간 + 읽음 숫자) */
+        .msg-info-column {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+        }
+
+        .msg-wrapper.my-msg-wrapper .msg-info-column {
+            align-items: flex-end;
+        }
+
+        .unread-count {
+            font-size: 10px;
+            font-weight: 700;
+            color: #EAB308; /* 노란색/골드 카톡 읽음 표시 */
+        }
+
         .msg-time {
             font-size: 10px;
             color: #94A3B8;
             white-space: nowrap;
-            margin-bottom: 2px;
         }
 
         .message {
@@ -518,7 +544,10 @@
         <!-- 2. 실시간 채팅 -->
         <aside class="chat-container">
             <div class="chat-header">
-                <span class="chat-header-title">팀 실시간 라이브 채팅</span>
+                <span class="chat-header-title">
+                    팀 실시간 라이브 채팅
+                    <span class="online-count-badge" id="online-count-display">1명</span>
+                </span>
                 <button class="noti-btn" id="noti-toggle-btn" onclick="requestNotificationPermission()">🔔 알림 켜기</button>
             </div>
             <div class="chat-messages" id="chat-messages">
@@ -578,7 +607,7 @@
     <!-- Firebase SDK 연동 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } 
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp, setDoc, arrayUnion } 
           from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -594,7 +623,60 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- 데스크톱 브라우저 알림 권한 및 전송 함수 ---
+        // 고유 사용자 ID 생성 또는 로드
+        let myUserId = localStorage.getItem('kanban_uid');
+        if (!myUserId) {
+            myUserId = 'user_' + Math.random().toString(36).substring(2, 9);
+            localStorage.setItem('kanban_uid', myUserId);
+        }
+
+        // --- 닉네임 관리 ---
+        const usernameInput = document.getElementById('username-input');
+        let myName = localStorage.getItem('kanban_username') || "교육생_" + Math.floor(Math.random() * 100);
+        usernameInput.value = myName;
+
+        usernameInput.addEventListener('change', () => {
+            myName = usernameInput.value.trim() || "익명";
+            localStorage.setItem('kanban_username', myName);
+            updatePresence();
+        });
+
+        // --- 실시간 접속자 트래킹 (Presence System) ---
+        let totalOnlineCount = 1;
+        async function updatePresence() {
+            const userPresenceRef = doc(db, "presence", myUserId);
+            try {
+                await setDoc(userPresenceRef, {
+                    name: myName,
+                    lastSeen: serverTimestamp()
+                }, { merge: true });
+            } catch (e) {
+                console.error("Presence update error:", e);
+            }
+        }
+
+        // 30초마다 핑 보내기
+        setInterval(updatePresence, 30000);
+        updatePresence();
+
+        // 현재 온라인 유저 카운팅 (최근 2분 이내 데이터만 접속 중으로 판단)
+        onSnapshot(collection(db, "presence"), (snapshot) => {
+            const now = Date.now();
+            let count = 0;
+            snapshot.forEach((d) => {
+                const data = d.data();
+                if (data.lastSeen) {
+                    const lastSeenTime = data.lastSeen.toDate ? data.lastSeen.toDate().getTime() : now;
+                    if (now - lastSeenTime < 120000) {
+                        count++;
+                    }
+                }
+            });
+            totalOnlineCount = Math.max(1, count);
+            document.getElementById('online-count-display').innerText = `${totalOnlineCount}명`;
+        });
+
+        // --- 데스크톱 브라우저 알림 권한 및 전송 ---
         window.requestNotificationPermission = function() {
             if (!("Notification" in window)) {
                 alert("이 브라우저는 데스크톱 알림을 지원하지 않습니다.");
@@ -613,7 +695,6 @@
             });
         };
 
-        // 초기 권한 상태 확인
         if ("Notification" in window && Notification.permission === "granted") {
             const btn = document.getElementById('noti-toggle-btn');
             if (btn) {
@@ -623,7 +704,6 @@
         }
 
         function triggerDesktopNotification(title, body) {
-            // 다른 창을 보고 있고(document.hidden) 알림 권한이 설정되어 있을 때만 발생
             if (document.hidden && "Notification" in window && Notification.permission === "granted") {
                 new Notification(title, {
                     body: body,
@@ -632,7 +712,7 @@
             }
         }
 
-        // --- URL 하이퍼링크 변환 함수 ---
+        // --- URL 하이퍼링크 변환 ---
         function autoLink(text) {
             if (!text) return "";
             const urlRegex = /(https?:\/\/[^\s<]+)/g;
@@ -641,7 +721,7 @@
             });
         }
 
-        // --- 시간 포맷 변환 함수 ---
+        // --- 시간 포맷 변환 ---
         function formatTime(timestamp) {
             if (!timestamp) return "";
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -652,16 +732,6 @@
             hours = hours ? hours : 12;
             return `${ampm} ${hours}:${minutes}`;
         }
-
-        // --- 닉네임 관리 ---
-        const usernameInput = document.getElementById('username-input');
-        let myName = localStorage.getItem('kanban_username') || "교육생_" + Math.floor(Math.random() * 100);
-        usernameInput.value = myName;
-
-        usernameInput.addEventListener('change', () => {
-            myName = usernameInput.value.trim() || "익명";
-            localStorage.setItem('kanban_username', myName);
-        });
 
         // --- 실시간 채팅 기능 ---
         const chatInput = document.getElementById('chat-input');
@@ -676,6 +746,8 @@
             const msgData = {
               sender: myName,
               text: text,
+              readBy: [myUserId], // 보낸 사람은 기본으로 읽음 처리
+              targetTotal: totalOnlineCount, // 전송 당시 접속 인원 수 기록
               createdAt: serverTimestamp()
             };
 
@@ -739,7 +811,16 @@
 
           snapshot.forEach((docSnap) => {
             const data = docSnap.data();
+            const msgId = docSnap.id;
             
+            // 아직 내 아이디가 readBy에 포함 안 되어 있다면 자동으로 읽음 추가 처리
+            const readByList = data.readBy || [];
+            if (!readByList.includes(myUserId)) {
+                updateDoc(doc(db, "messages", msgId), {
+                    readBy: arrayUnion(myUserId)
+                }).catch(() => {});
+            }
+
             const msgWrapper = document.createElement('div');
             const isMe = data.sender === myName;
             
@@ -747,6 +828,12 @@
 
             let senderHTML = isMe ? '' : `<div class="msg-sender">${data.sender}</div>`;
             let fileHTML = '';
+            
+            // 안 읽은 사람 수 계산 (전체 목표 - 이미 읽은 사람 수)
+            const targetTotal = data.targetTotal || Math.max(totalOnlineCount, readByList.length);
+            const unreadCount = Math.max(0, targetTotal - readByList.length);
+            const unreadHTML = unreadCount > 0 ? `<span class="unread-count">${unreadCount}</span>` : '';
+            
             let timeHTML = data.createdAt ? `<span class="msg-time">${formatTime(data.createdAt)}</span>` : '';
 
             if (data.fileData) {
@@ -766,7 +853,10 @@
                         ${contentHTML}
                         ${fileHTML}
                     </div>
-                    ${timeHTML}
+                    <div class="msg-info-column">
+                        ${unreadHTML}
+                        ${timeHTML}
+                    </div>
                 </div>
             `;
 
