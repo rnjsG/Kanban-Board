@@ -83,7 +83,7 @@
             border: none;
             background: transparent;
             font-weight: 600;
-            color: var(--lg-red);
+            color: #334155; /* 진한 회색으로 변경 */
             outline: none;
             width: 100px;
         }
@@ -244,7 +244,7 @@
             background-color: #FAFAFA;
         }
 
-        /* 메시지 레이아웃 (상대방: 좌측, 본인: 우측) */
+        /* 메시지 레이아웃 (시간 표시 포함) */
         .msg-wrapper {
             display: flex;
             flex-direction: column;
@@ -262,6 +262,23 @@
             color: var(--text-sub);
             margin-bottom: 4px;
             padding: 0 4px;
+        }
+
+        .msg-content-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .msg-wrapper.my-msg-wrapper .msg-content-row {
+            flex-direction: row-reverse;
+        }
+
+        .msg-time {
+            font-size: 10px;
+            color: #94A3B8;
+            white-space: nowrap;
+            margin-bottom: 2px;
         }
 
         .message {
@@ -552,13 +569,25 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- 텍스트 내 URL을 하이퍼링크(<a> 태그)로 자동 변환하는 함수 ---
+        // --- URL 하이퍼링크 변환 함수 ---
         function autoLink(text) {
             if (!text) return "";
             const urlRegex = /(https?:\/\/[^\s<]+)/g;
             return text.replace(urlRegex, (url) => {
                 return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
             });
+        }
+
+        // --- 시간 포맷 변환 함수 ---
+        function formatTime(timestamp) {
+            if (!timestamp) return "";
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            let hours = date.getHours();
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? '오후' : '오전';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            return `${ampm} ${hours}:${minutes}`;
         }
 
         // --- 닉네임 관리 ---
@@ -608,7 +637,6 @@
           }
         });
 
-        // 채팅 파일 업로드 핸들러
         window.handleChatFileUpload = function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -644,6 +672,7 @@
 
             let senderHTML = isMe ? '' : `<div class="msg-sender">${data.sender}</div>`;
             let fileHTML = '';
+            let timeHTML = data.createdAt ? `<span class="msg-time">${formatTime(data.createdAt)}</span>` : '';
 
             if (data.fileData) {
                 if (data.fileType && data.fileType.startsWith('image/')) {
@@ -657,9 +686,12 @@
 
             msgWrapper.innerHTML = `
                 ${senderHTML}
-                <div class="message">
-                    ${contentHTML}
-                    ${fileHTML}
+                <div class="msg-content-row">
+                    <div class="message">
+                        ${contentHTML}
+                        ${fileHTML}
+                    </div>
+                    ${timeHTML}
                 </div>
             `;
 
@@ -819,6 +851,7 @@
             if (data.assignee) metaHTML += `<span class="card-badge">👤 ${data.assignee}</span>`;
             if (data.dueDate) metaHTML += `<span class="card-badge">📅 ${data.dueDate}</span>`;
             if (data.fileName) metaHTML += `<span class="card-badge">📁 파일첨부</span>`;
+            if (data.createdAt) metaHTML += `<span class="card-badge">🕒 ${formatTime(data.createdAt)}</span>`;
 
             cardEl.innerHTML = `
                 <div class="card-title">${autoLink(data.title)}</div>
