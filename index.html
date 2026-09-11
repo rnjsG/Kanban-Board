@@ -164,6 +164,7 @@
             margin-bottom: 10px;
             color: var(--text-main);
             line-height: 1.4;
+            word-break: break-all;
         }
 
         .card-meta {
@@ -206,7 +207,7 @@
 
         /* 3. 우측 실시간 채팅 */
         .chat-container {
-            width: 360px;
+            width: 380px;
             background-color: var(--header-bg);
             border-left: 1px solid var(--border-color);
             display: flex;
@@ -243,20 +244,39 @@
             background-color: #FAFAFA;
         }
 
+        /* 메시지 레이아웃 (상대방: 좌측, 본인: 우측) */
+        .msg-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            max-width: 85%;
+        }
+
+        .msg-wrapper.my-msg-wrapper {
+            align-items: flex-end;
+            align-self: flex-end;
+        }
+
+        .msg-sender {
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-bottom: 4px;
+            padding: 0 4px;
+        }
+
         .message {
             background-color: #FFFFFF;
             padding: 10px 14px;
             border-radius: 12px;
             border-top-left-radius: 2px;
-            max-width: 85%;
             font-size: 13px;
             line-height: 1.5;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
+            word-break: break-all;
         }
 
-        .message.my-message {
-            align-self: flex-end;
+        .msg-wrapper.my-msg-wrapper .message {
             background-color: var(--lg-red);
             color: white;
             border: none;
@@ -264,19 +284,56 @@
             border-top-right-radius: 2px;
         }
 
-        .message.my-message strong {
+        /* 하이퍼링크 스타일 */
+        .message a, .card-title a, .card-desc a {
+            color: #2563EB;
+            text-decoration: underline;
+        }
+
+        .msg-wrapper.my-msg-wrapper .message a {
             color: #FFD1DC;
+        }
+
+        /* 채팅 이미지 및 파일 스타일 */
+        .chat-file-img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 6px;
+            display: block;
+        }
+
+        .chat-file-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-top: 6px;
+            font-size: 12px;
+            text-decoration: none !important;
+            color: inherit !important;
+        }
+
+        .msg-wrapper.my-msg-wrapper .chat-file-link {
+            background: rgba(255, 255, 255, 0.2);
         }
 
         .chat-input-area {
             padding: 16px;
             border-top: 1px solid var(--border-color);
             display: flex;
+            flex-direction: column;
             gap: 8px;
             background-color: #FFFFFF;
         }
 
-        .chat-input-area input {
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input-area input[type="text"] {
             flex: 1;
             padding: 10px 14px;
             border: 1px solid var(--border-color);
@@ -286,7 +343,7 @@
             transition: border-color 0.2s;
         }
 
-        .chat-input-area input:focus {
+        .chat-input-area input[type="text"]:focus {
             border-color: var(--lg-red);
         }
 
@@ -304,6 +361,17 @@
 
         .chat-input-area button:hover {
             background-color: var(--lg-red-hover);
+        }
+
+        .attach-btn {
+            background-color: #F1F5F9 !important;
+            color: #475569 !important;
+            border: 1px solid var(--border-color) !important;
+            padding: 6px 12px !important;
+            border-radius: 6px !important;
+            font-size: 12px !important;
+            cursor: pointer;
+            width: fit-content;
         }
 
         /* 4. 모달 스타일 */
@@ -324,6 +392,8 @@
             padding: 28px;
             border-radius: 12px;
             width: 440px;
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
@@ -375,7 +445,7 @@
     <!-- 헤더 영역 -->
     <header class="app-header">
         <div class="header-title-area">
-            <span class="logo-badge">LG Chem</span>
+            <span class="logo-badge">LG Chemistry</span>
             <h1>LG화학 K뉴딜 아카데미 오산 2기</h1>
         </div>
         <div class="user-profile">
@@ -413,8 +483,12 @@
                 <div class="message"><strong>알림:</strong> 연결 중...</div>
             </div>
             <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="메시지 입력...">
-                <button id="send-btn">전송</button>
+                <input type="file" id="chat-file-input" style="display: none;" onchange="handleChatFileUpload(event)">
+                <button type="button" class="attach-btn" onclick="document.getElementById('chat-file-input').click()">📁 사진/파일 첨부</button>
+                <div class="chat-input-row">
+                    <input type="text" id="chat-input" placeholder="메시지 입력...">
+                    <button id="send-btn">전송</button>
+                </div>
             </div>
         </aside>
     </div>
@@ -428,11 +502,11 @@
             
             <label>
                 카드 제목
-                <input type="text" id="modal-card-name" placeholder="제목을 입력하세요">
+                <input type="text" id="modal-card-name" placeholder="제목을 입력하세요 (URL 입력 시 링크 변환)">
             </label>
             <label>
                 상세 설명
-                <textarea id="modal-card-desc" rows="3" placeholder="상세한 내용이나 메모를 입력하세요"></textarea>
+                <textarea id="modal-card-desc" rows="3" placeholder="상세 내용이나 메모를 입력하세요 (URL 입력 시 링크 변환)"></textarea>
             </label>
             <label>
                 담당자
@@ -441,6 +515,14 @@
             <label>
                 마감일
                 <input type="date" id="modal-card-duedate">
+            </label>
+            <label>
+                파일/이미지 첨부
+                <input type="file" id="modal-card-file" onchange="handleModalFileUpload(event)">
+                <input type="hidden" id="modal-file-data">
+                <input type="hidden" id="modal-file-name">
+                <input type="hidden" id="modal-file-type">
+                <div id="file-preview" style="font-size: 12px; color: var(--text-sub); margin-top: 4px;"></div>
             </label>
 
             <div class="modal-buttons">
@@ -470,6 +552,15 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // --- 텍스트 내 URL을 하이퍼링크(<a> 태그)로 자동 변환하는 함수 ---
+        function autoLink(text) {
+            if (!text) return "";
+            const urlRegex = /(https?:\/\/[^\s<]+)/g;
+            return text.replace(urlRegex, (url) => {
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+            });
+        }
+
         // --- 닉네임 관리 ---
         const usernameInput = document.getElementById('username-input');
         let myName = localStorage.getItem('kanban_username') || "교육생_" + Math.floor(Math.random() * 100);
@@ -485,22 +576,31 @@
         const sendBtn = document.getElementById('send-btn');
         const chatMessages = document.getElementById('chat-messages');
 
-        async function sendMessage() {
+        async function sendMessage(filePayload = null) {
           const text = chatInput.value.trim();
-          if (text === "") return;
+          if (text === "" && !filePayload) return;
+
           try {
-            await addDoc(collection(db, "messages"), {
+            const msgData = {
               sender: myName,
               text: text,
               createdAt: serverTimestamp()
-            });
+            };
+
+            if (filePayload) {
+              msgData.fileData = filePayload.data;
+              msgData.fileName = filePayload.name;
+              msgData.fileType = filePayload.type;
+            }
+
+            await addDoc(collection(db, "messages"), msgData);
             chatInput.value = "";
           } catch (error) {
             console.error("전송 오류:", error);
           }
         }
 
-        sendBtn.addEventListener('click', sendMessage);
+        sendBtn.addEventListener('click', () => sendMessage());
         chatInput.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' && !e.isComposing) {
             e.preventDefault();
@@ -508,27 +608,89 @@
           }
         });
 
+        // 채팅 파일 업로드 핸들러
+        window.handleChatFileUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 1024 * 1024 * 3) {
+                alert("파일 크기는 최대 3MB까지 첨부 가능합니다.");
+                event.target.value = "";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                sendMessage({
+                    data: e.target.result,
+                    name: file.name,
+                    type: file.type
+                });
+                event.target.value = "";
+            };
+            reader.readAsDataURL(file);
+        };
+
         const qChat = query(collection(db, "messages"), orderBy("createdAt", "asc"));
         onSnapshot(qChat, (snapshot) => {
           chatMessages.innerHTML = '<div class="message"><strong>알림:</strong> 채팅방에 연결되었습니다.</div>';
           snapshot.forEach((docSnap) => {
             const data = docSnap.data();
-            const msgDiv = document.createElement('div');
             
-            if (data.sender === myName) {
-              msgDiv.className = 'message my-message';
-            } else {
-              msgDiv.className = 'message';
+            const msgWrapper = document.createElement('div');
+            const isMe = data.sender === myName;
+            
+            msgWrapper.className = isMe ? 'msg-wrapper my-msg-wrapper' : 'msg-wrapper';
+
+            let senderHTML = isMe ? '' : `<div class="msg-sender">${data.sender}</div>`;
+            let fileHTML = '';
+
+            if (data.fileData) {
+                if (data.fileType && data.fileType.startsWith('image/')) {
+                    fileHTML = `<br><img src="${data.fileData}" class="chat-file-img" alt="첨부 이미지">`;
+                } else {
+                    fileHTML = `<br><a href="${data.fileData}" download="${data.fileName}" class="chat-file-link">💾 ${data.fileName}</a>`;
+                }
             }
 
-            msgDiv.innerHTML = `<strong>${data.sender}:</strong> ${data.text}`;
-            chatMessages.appendChild(msgDiv);
+            const contentHTML = autoLink(data.text || "");
+
+            msgWrapper.innerHTML = `
+                ${senderHTML}
+                <div class="message">
+                    ${contentHTML}
+                    ${fileHTML}
+                </div>
+            `;
+
+            chatMessages.appendChild(msgWrapper);
           });
           chatMessages.scrollTop = chatMessages.scrollHeight;
         });
 
         // --- 칸반 카드 및 모달 기능 ---
         const cardsData = {};
+
+        window.handleModalFileUpload = function(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('file-preview');
+            if (!file) return;
+
+            if (file.size > 1024 * 1024 * 3) {
+                alert("파일 크기는 최대 3MB까지 첨부 가능합니다.");
+                event.target.value = "";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('modal-file-data').value = e.target.result;
+                document.getElementById('modal-file-name').value = file.name;
+                document.getElementById('modal-file-type').value = file.type;
+                preview.innerText = `첨부됨: ${file.name}`;
+            };
+            reader.readAsDataURL(file);
+        };
 
         window.openAddModal = function(status) {
             document.getElementById('modal-title').innerText = "새 업무 카드 추가";
@@ -538,6 +700,11 @@
             document.getElementById('modal-card-desc').value = "";
             document.getElementById('modal-card-assignee').value = myName;
             document.getElementById('modal-card-duedate').value = "";
+            document.getElementById('modal-card-file').value = "";
+            document.getElementById('modal-file-data').value = "";
+            document.getElementById('modal-file-name').value = "";
+            document.getElementById('modal-file-type').value = "";
+            document.getElementById('file-preview').innerText = "";
             document.getElementById('modal-delete-btn').style.display = "none";
             document.getElementById('card-modal').style.display = "flex";
         };
@@ -553,6 +720,11 @@
             document.getElementById('modal-card-desc').value = card.desc || "";
             document.getElementById('modal-card-assignee').value = card.assignee || "";
             document.getElementById('modal-card-duedate').value = card.dueDate || "";
+            document.getElementById('modal-card-file').value = "";
+            document.getElementById('modal-file-data').value = card.fileData || "";
+            document.getElementById('modal-file-name').value = card.fileName || "";
+            document.getElementById('modal-file-type').value = card.fileType || "";
+            document.getElementById('file-preview').innerText = card.fileName ? `기존 파일: ${card.fileName}` : "";
             document.getElementById('modal-delete-btn').style.display = "block";
             document.getElementById('card-modal').style.display = "flex";
         };
@@ -568,6 +740,9 @@
             const desc = document.getElementById('modal-card-desc').value.trim();
             const assignee = document.getElementById('modal-card-assignee').value.trim();
             const dueDate = document.getElementById('modal-card-duedate').value;
+            const fileData = document.getElementById('modal-file-data').value;
+            const fileName = document.getElementById('modal-file-name').value;
+            const fileType = document.getElementById('modal-file-type').value;
 
             if (!title) {
                 alert("제목을 입력해주세요.");
@@ -575,13 +750,13 @@
             }
 
             try {
+                const cardPayload = { title, desc, assignee, dueDate, fileData, fileName, fileType };
                 if (id) {
-                    await updateDoc(doc(db, "cards", id), { title, desc, assignee, dueDate });
+                    await updateDoc(doc(db, "cards", id), cardPayload);
                 } else {
-                    await addDoc(collection(db, "cards"), {
-                        title, desc, assignee, dueDate, status,
-                        createdAt: serverTimestamp()
-                    });
+                    cardPayload.status = status;
+                    cardPayload.createdAt = serverTimestamp();
+                    await addDoc(collection(db, "cards"), cardPayload);
                 }
                 closeModal();
             } catch (error) {
@@ -643,13 +818,18 @@
             let metaHTML = '';
             if (data.assignee) metaHTML += `<span class="card-badge">👤 ${data.assignee}</span>`;
             if (data.dueDate) metaHTML += `<span class="card-badge">📅 ${data.dueDate}</span>`;
+            if (data.fileName) metaHTML += `<span class="card-badge">📁 파일첨부</span>`;
 
             cardEl.innerHTML = `
-                <div class="card-title">${data.title}</div>
+                <div class="card-title">${autoLink(data.title)}</div>
                 <div class="card-meta">${metaHTML}</div>
             `;
 
-            cardEl.addEventListener('click', () => openEditModal(cardId));
+            cardEl.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'A') {
+                    openEditModal(cardId);
+                }
+            });
 
             cardEl.addEventListener('dragstart', (e) => {
               e.stopPropagation();
