@@ -219,6 +219,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: relative;
         }
 
         .chat-header-title {
@@ -240,9 +241,72 @@
             font-size: 11px;
             background: #E2E8F0;
             color: #475569;
-            padding: 2px 6px;
+            padding: 3px 8px;
             border-radius: 10px;
             margin-left: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .online-count-badge:hover {
+            background: #CBD5E1;
+            color: #1E293B;
+        }
+
+        /* 접속자 목록 팝업 */
+        .online-users-popover {
+            display: none;
+            position: absolute;
+            top: 48px;
+            left: 120px;
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 180px;
+            padding: 12px;
+            z-index: 60;
+        }
+
+        .online-users-popover.active {
+            display: block;
+        }
+
+        .online-users-popover-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .online-users-list {
+            list-style: none;
+            max-height: 160px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .online-user-item {
+            font-size: 13px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .online-user-item::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #22C55E;
+            border-radius: 50%;
         }
 
         .noti-btn {
@@ -575,8 +639,17 @@
             <div class="chat-header">
                 <span class="chat-header-title">
                     팀 실시간 라이브 채팅
-                    <span class="online-count-badge" id="online-count-display">1명</span>
+                    <span class="online-count-badge" id="online-count-display" onclick="toggleOnlineUsersPopover(event)">1명</span>
                 </span>
+                
+                <!-- 접속자 목록 팝업 -->
+                <div class="online-users-popover" id="online-users-popover">
+                    <div class="online-users-popover-title">현재 참여자 목록</div>
+                    <ul class="online-users-list" id="online-users-list">
+                        <li class="online-user-item">로딩 중...</li>
+                    </ul>
+                </div>
+
                 <button class="noti-btn" id="noti-toggle-btn" onclick="requestNotificationPermission()">🔔 알림 권한 설정</button>
             </div>
             <div class="chat-messages" id="chat-messages">
@@ -685,6 +758,8 @@
         });
 
         let totalOnlineCount = 1;
+        let onlineUsersList = [];
+
         async function updatePresence() {
             const userPresenceRef = doc(db, "presence", myUserId);
             try {
@@ -702,19 +777,36 @@
 
         onSnapshot(collection(db, "presence"), (snapshot) => {
             const now = Date.now();
-            let count = 0;
+            const activeUsers = [];
+
             snapshot.forEach((d) => {
                 const data = d.data();
                 if (data.lastSeen) {
                     const lastSeenTime = data.lastSeen.toDate ? data.lastSeen.toDate().getTime() : now;
+                    // 2분 이내 활동이 있는 사용자를 실시간 접속자로 인지
                     if (now - lastSeenTime < 120000) {
-                        count++;
+                        activeUsers.push(data.name || "익명");
                     }
                 }
             });
-            totalOnlineCount = Math.max(1, count);
+
+            onlineUsersList = activeUsers;
+            totalOnlineCount = Math.max(1, activeUsers.length);
             document.getElementById('online-count-display').innerText = `${totalOnlineCount}명`;
+
+            // 접속자 팝업 데이터 갱신
+            const listEl = document.getElementById('online-users-list');
+            if (listEl) {
+                listEl.innerHTML = activeUsers.map(name => `<li class="online-user-item">${name}</li>`).join('');
+            }
         });
+
+        // --- 접속자 목록 팝업 토글 함수 ---
+        window.toggleOnlineUsersPopover = function(event) {
+            event.stopPropagation();
+            const popover = document.getElementById('online-users-popover');
+            popover.classList.toggle('active');
+        };
 
         // --- 알림 설정 ---
         window.requestNotificationPermission = function() {
@@ -748,7 +840,6 @@
             }
         }
 
-        // [핵심 변경] 사용자가 다른 탭/창에 있을 때만 알림 발생 (document.hidden 조건)
         function triggerDesktopNotification(title, body) {
             try {
                 if (document.hidden && "Notification" in window && Notification.permission === "granted") {
@@ -757,7 +848,6 @@
                         icon: 'https://www.lgchem.com/favicon.ico'
                     });
                     
-                    // 알림 클릭 시 해당 탭으로 화면 이동
                     instance.onclick = function() {
                         window.focus();
                         instance.close();
@@ -784,10 +874,16 @@
             document.getElementById('emoji-picker').classList.remove('active');
         };
 
+        // 바깥 영역 클릭 시 팝업 닫기 처리
         document.addEventListener('click', (e) => {
-            const picker = document.getElementById('emoji-picker');
-            if (picker && picker.classList.contains('active') && !picker.contains(e.target)) {
-                picker.classList.remove('active');
+            const emojiPicker = document.getElementById('emoji-picker');
+            if (emojiPicker && emojiPicker.classList.contains('active') && !emojiPicker.contains(e.target)) {
+                emojiPicker.classList.remove('active');
+            }
+
+            const usersPopover = document.getElementById('online-users-popover');
+            if (usersPopover && usersPopover.classList.contains('active') && !usersPopover.contains(e.target)) {
+                usersPopover.classList.remove('active');
             }
         });
 
