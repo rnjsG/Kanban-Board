@@ -454,6 +454,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            position: relative;
         }
 
         .chat-input-row {
@@ -475,7 +476,7 @@
             border-color: var(--lg-red);
         }
 
-        .chat-input-area button {
+        .chat-input-area #send-btn {
             padding: 10px 18px;
             background-color: var(--lg-red);
             color: white;
@@ -487,7 +488,7 @@
             transition: background 0.2s;
         }
 
-        .chat-input-area button:hover {
+        .chat-input-area #send-btn:hover {
             background-color: var(--lg-red-hover);
         }
 
@@ -502,38 +503,46 @@
             width: fit-content;
         }
 
+        /* 💡 이모티콘 피커 박스 레이아웃 및 짤림 수정 */
         .emoji-picker-box {
             display: none;
             position: absolute;
-            bottom: 105%;
-            left: 16px;
-            width: 280px;
+            bottom: calc(100% + 8px);
+            left: 0;
+            width: 270px;
             background: #FFFFFF;
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 10px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             grid-template-columns: repeat(6, 1fr);
-            gap: 6px;
-            z-index: 50;
+            gap: 4px;
+            z-index: 100;
         }
 
         .emoji-picker-box.active {
             display: grid;
         }
 
-        .emoji-btn {
-            background: transparent;
-            border: none;
-            font-size: 20px;
-            padding: 6px;
+        /* 💡 이모티콘 버튼 빨간색 배경 덮임 현상 강제 초기화 (!important) */
+        .emoji-picker-box button.emoji-btn {
+            background: transparent !important;
+            background-color: transparent !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-size: 20px !important;
+            padding: 6px 0 !important;
             cursor: pointer;
-            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100% !important;
+            height: 38px !important;
             transition: background 0.15s;
         }
 
-        .emoji-btn:hover {
-            background: #F1F5F9;
+        .emoji-picker-box button.emoji-btn:hover {
+            background-color: #F1F5F9 !important;
         }
 
         .modal-overlay {
@@ -656,25 +665,25 @@
                 <div class="message"><strong>알림:</strong> 연결 중...</div>
             </div>
             <div class="chat-input-area">
-                <div class="emoji-picker-box" id="emoji-picker">
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('👏')">👏</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('✅')">✅</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🙏')">🙏</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('💡')">💡</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('💪')">💪</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('✨')">✨</button>
-                </div>
-
                 <div class="chat-tools-row">
                     <input type="file" id="chat-file-input" style="display: none;" onchange="handleChatFileUpload(event)">
                     <button type="button" class="attach-btn" onclick="document.getElementById('chat-file-input').click()">📁 첨부</button>
                     <button type="button" class="emoji-toggle-btn" onclick="toggleEmojiPicker(event)">😊 이모티콘</button>
+                    
+                    <div class="emoji-picker-box" id="emoji-picker">
+                        <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmoji('👏')">👏</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmoji('✅')">✅</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmoji('🙏')">🙏</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmoji('💡')">💡</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmoji('💪')">💪</button>
+                        <button type="button" class="emoji-btn" onclick="insertEmoji('✨')">✨</button>
+                    </div>
                 </div>
                 <div class="chat-input-row">
                     <input type="text" id="chat-input" placeholder="메시지 입력...">
@@ -754,31 +763,27 @@
         let totalOnlineCount = 1;
         let onlineUsersList = [];
 
-        // 💡 이름 변경 및 중복 확인 로직
+        // 이름 변경 및 중복 확인 로직
         usernameInput.addEventListener('change', () => {
             const newName = usernameInput.value.trim();
 
-            // 1. 빈 값 입력 시 경고
             if (!newName) {
                 alert("이름을 입력해 주세요.");
                 usernameInput.value = myName;
                 return;
             }
 
-            // 2. 기존 이름과 동일하면 무시
             if (newName === myName) return;
 
-            // 3. 현재 온라인 사용자 목록 중 중복 체크
             const isDuplicate = onlineUsersList.some(user => user === newName);
 
             if (isDuplicate) {
                 alert(`'${newName}'(은)는 이미 다른 사용자가 사용 중입니다. 다른 이름을 입력해 주세요.`);
-                usernameInput.value = myName; // 기존 이름으로 복구
-                usernameInput.focus();       // 수정할 수 있도록 입력창에 포커스
+                usernameInput.value = myName;
+                usernameInput.focus();
                 return;
             }
 
-            // 4. 중복이 없으면 정상 변경 및 DB 반영
             myName = newName;
             localStorage.setItem('kanban_username', myName);
             updatePresence();
@@ -803,7 +808,7 @@
             navigator.sendBeacon(url + "?method=DELETE");
         }
 
-        // 10초 주기 하트비트 (빠른 접속 감지)
+        // 10초 주기 하트비트
         setInterval(updatePresence, 10000);
         updatePresence();
 
@@ -820,7 +825,6 @@
                 const data = d.data();
                 if (data.lastSeen) {
                     const lastSeenTime = data.lastSeen.toDate ? data.lastSeen.toDate().getTime() : now;
-                    // 25초 이상 신호가 없으면 접속자에서 제외
                     if (now - lastSeenTime < 25000) {
                         activeUsers.push(data.name || "익명");
                     }
@@ -831,7 +835,6 @@
             totalOnlineCount = Math.max(1, activeUsers.length);
             document.getElementById('online-count-display').innerText = `${totalOnlineCount}명`;
 
-            // 접속자 팝업 데이터 갱신
             const listEl = document.getElementById('online-users-list');
             if (listEl) {
                 listEl.innerHTML = activeUsers.map(name => `<li class="online-user-item">${name}</li>`).join('');
