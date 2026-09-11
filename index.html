@@ -84,7 +84,7 @@
             font-weight: 600;
             color: #334155;
             outline: none;
-            width: 100px;
+            width: 120px;
         }
 
         .main-container {
@@ -751,14 +751,38 @@
         let myName = localStorage.getItem('kanban_username') || "교육생_" + Math.floor(Math.random() * 100);
         usernameInput.value = myName;
 
+        let totalOnlineCount = 1;
+        let onlineUsersList = [];
+
+        // 💡 이름 변경 및 중복 확인 로직
         usernameInput.addEventListener('change', () => {
-            myName = usernameInput.value.trim() || "익명";
+            const newName = usernameInput.value.trim();
+
+            // 1. 빈 값 입력 시 경고
+            if (!newName) {
+                alert("이름을 입력해 주세요.");
+                usernameInput.value = myName;
+                return;
+            }
+
+            // 2. 기존 이름과 동일하면 무시
+            if (newName === myName) return;
+
+            // 3. 현재 온라인 사용자 목록 중 중복 체크
+            const isDuplicate = onlineUsersList.some(user => user === newName);
+
+            if (isDuplicate) {
+                alert(`'${newName}'(은)는 이미 다른 사용자가 사용 중입니다. 다른 이름을 입력해 주세요.`);
+                usernameInput.value = myName; // 기존 이름으로 복구
+                usernameInput.focus();       // 수정할 수 있도록 입력창에 포커스
+                return;
+            }
+
+            // 4. 중복이 없으면 정상 변경 및 DB 반영
+            myName = newName;
             localStorage.setItem('kanban_username', myName);
             updatePresence();
         });
-
-        let totalOnlineCount = 1;
-        let onlineUsersList = [];
 
         // 접속 정보 신호 보냄
         async function updatePresence() {
@@ -773,17 +797,17 @@
             }
         }
 
-        // 창을 완전히 닫을 때 신뢰성 있게 DB에서 강제 삭제하기 위한 sendBeacon 요청
+        // 창을 완전히 닫을 때 DB에서 강제 삭제하기 위한 sendBeacon 요청
         function removePresenceBeacon() {
             const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/presence/${myUserId}`;
             navigator.sendBeacon(url + "?method=DELETE");
         }
 
-        // 10초 주기 하트비트 (빠른 감지)
+        // 10초 주기 하트비트 (빠른 접속 감지)
         setInterval(updatePresence, 10000);
         updatePresence();
 
-        // 💡 탭/창 종료 시 즉시 삭제 요청 전송
+        // 탭/창 종료 시 즉시 삭제 요청 전송
         window.addEventListener('pagehide', removePresenceBeacon);
         window.addEventListener('beforeunload', removePresenceBeacon);
 
@@ -796,7 +820,7 @@
                 const data = d.data();
                 if (data.lastSeen) {
                     const lastSeenTime = data.lastSeen.toDate ? data.lastSeen.toDate().getTime() : now;
-                    // 25초 이상 새로운 신호(하트비트)가 없거나 탭이 꺼진 경우 접속자에서 제외
+                    // 25초 이상 신호가 없으면 접속자에서 제외
                     if (now - lastSeenTime < 25000) {
                         activeUsers.push(data.name || "익명");
                     }
@@ -814,7 +838,7 @@
             }
         });
 
-        // --- 접속자 목록 팝업 토글 함수 ---
+        // --- 접속자 목록 팝업 토글 ---
         window.toggleOnlineUsersPopover = function(event) {
             event.stopPropagation();
             const popover = document.getElementById('online-users-popover');
@@ -887,7 +911,7 @@
             document.getElementById('emoji-picker').classList.remove('active');
         };
 
-        // 바깥 영역 클릭 시 팝업 닫기 처리
+        // 바깥 영역 클릭 시 팝업 닫기
         document.addEventListener('click', (e) => {
             const emojiPicker = document.getElementById('emoji-picker');
             if (emojiPicker && emojiPicker.classList.contains('active') && !emojiPicker.contains(e.target)) {
