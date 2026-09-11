@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LG화학 K뉴딜 아카데미 오산 2기 - 협업 보드</title>
+    <style>
+        :root {
+            --lg-red: #A50034;
+            --lg-red-hover: #800028;
+            --bg-color: #F4F6F9;
+            --card-bg: #FFFFFF;
+            --text-main: #1E2229;
+            --text-sub: #6C757D;
+            --border-color: #E2E8F0;
+            --header-bg: #FFFFFF;
+            --column-bg: #EDF2F7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* 1. 상단 글로벌 헤더 */
+        .app-header {
+            height: 60px;
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .header-title-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-badge {
+            background-color: var(--lg-red);
+            color: white;
+            font-weight: 800;
+            font-size: 13px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .header-title-area h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            background: #F8FAFC;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .user-profile input {
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            color: var(--lg-red);
+            outline: none;
+            width: 100px;
+        }
+
+        /* 메인 콘텐츠 레이아웃 */
+        .main-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+
+        /* 2. 좌측/중앙: 칸반 보드 */
+        .board-container {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+        }
+
+        .column {
+            background-color: var(--column-bg);
+            width: 320px;
+            min-width: 320px;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            max-height: 100%;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .column-header {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 100px;
+            padding-right: 2px;
+        }
+
+        /* 카드 디자인 */
+        .card {
+            background-color: var(--card-bg);
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-color);
+            cursor: grab;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border-color: #CBD5E1;
+            transform: translateY(-2px);
+        }
+
+        .card:active {
+            cursor: grabbing;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .card-meta {
+            font-size: 12px;
+            color: var(--text-sub);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .card-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: #F1F5F9;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .add-card-btn {
+            margin-top: 12px;
+            padding: 10px;
+            background-color: transparent;
+            color: var(--text-sub);
+            border: 1px dashed #CBD5E1;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .add-card-btn:hover {
+            background-color: #FFFFFF;
+            color: var(--lg-red);
+            border-color: var(--lg-red);
+        }
+
+        /* 3. 우측 실시간 채팅 */
+        .chat-container {
+            width: 360px;
+            background-color: var(--header-bg);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-header::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #22C55E;
+            border-radius: 50%;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: #FAFAFA;
+        }
+
+        .message {
+            background-color: #FFFFFF;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border-top-left-radius: 2px;
+            max-width: 85%;
+            font-size: 13px;
+            line-height: 1.5;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .message.my-message {
+            align-self: flex-end;
+            background-color: var(--lg-red);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            border-top-right-radius: 2px;
+        }
+
+        .message.my-message strong {
+            color: #FFD1DC;
+        }
+
+        .chat-input-area {
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
+            background-color: #FFFFFF;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input-area input:focus {
+            border-color: var(--lg-red);
+        }
+
+        .chat-input-area button {
+            padding: 10px 18px;
+            background-color: var(--lg-red);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .chat-input-area button:hover {
+            background-color: var(--lg-red-hover);
+        }
+
+        /* 4. 모달 스타일 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal {
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            width: 440px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal h2 {
+            font-size: 18px;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .modal label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .modal input, .modal textarea {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .modal input:focus, .modal textarea:focus {
+            border-color: var(--lg-red);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .btn-save { background-color: var(--lg-red); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .btn-save:hover { background-color: var(--lg-red-hover); }
+        .btn-delete { background-color: #EF4444; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .btn-close { background-color: #F1F5F9; color: #475569; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <!-- 헤더 영역 -->
+    <header class="app-header">
+        <div class="header-title-area">
+            <span class="logo-badge">LG Chem</span>
+            <h1>LG화학 K뉴딜 아카데미 오산 2기</h1>
+        </div>
+        <div class="user-profile">
+            <span>👤 내 이름:</span>
+            <input type="text" id="username-input" value="">
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- 1. 칸반 보드 -->
+        <main class="board-container">
+            <div class="column">
+                <div class="column-header">To Do (할 일)</div>
+                <div class="card-list" id="todo" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+                <button class="add-card-btn" onclick="openAddModal('todo')">+ 업무 카드 추가</button>
+            </div>
+
+            <div class="column">
+                <div class="column-header">In Progress (진행 중)</div>
+                <div class="card-list" id="doing" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+                <button class="add-card-btn" onclick="openAddModal('doing')">+ 업무 카드 추가</button>
+            </div>
+
+            <div class="column">
+                <div class="column-header">Done (완료)</div>
+                <div class="card-list" id="done" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+                <button class="add-card-btn" onclick="openAddModal('done')">+ 업무 카드 추가</button>
+            </div>
+        </main>
+
+        <!-- 2. 실시간 채팅 -->
+        <aside class="chat-container">
+            <div class="chat-header">팀 실시간 라이브 채팅</div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="message"><strong>알림:</strong> 연결 중...</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="메시지 입력...">
+                <button id="send-btn">전송</button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- 3. 카드 생성/수정 모달 -->
+    <div class="modal-overlay" id="card-modal">
+        <div class="modal">
+            <h2 id="modal-title">업무 상세 정보</h2>
+            <input type="hidden" id="modal-card-id">
+            <input type="hidden" id="modal-card-status">
+            
+            <label>
+                카드 제목
+                <input type="text" id="modal-card-name" placeholder="제목을 입력하세요">
+            </label>
+            <label>
+                상세 설명
+                <textarea id="modal-card-desc" rows="3" placeholder="상세한 내용이나 메모를 입력하세요"></textarea>
+            </label>
+            <label>
+                담당자
+                <input type="text" id="modal-card-assignee" placeholder="담당자 이름">
+            </label>
+            <label>
+                마감일
+                <input type="date" id="modal-card-duedate">
+            </label>
+
+            <div class="modal-buttons">
+                <button class="btn-delete" id="modal-delete-btn" onclick="deleteCard()" style="display: none;">삭제</button>
+                <button class="btn-save" onclick="saveCard()">저장</button>
+                <button class="btn-close" onclick="closeModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK 연동 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } 
+          from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyDfFRk5c_i1K0W04T229N-wcsevrIypE6k",
+          authDomain: "kanban-c32bb.firebaseapp.com",
+          projectId: "kanban-c32bb",
+          storageBucket: "kanban-c32bb.firebasestorage.app",
+          messagingSenderId: "754380153148",
+          appId: "1:754380153148:web:eb4b461fab2d78eb077e39",
+          measurementId: "G-75CQRQV4FH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- 닉네임 관리 ---
+        const usernameInput = document.getElementById('username-input');
+        let myName = localStorage.getItem('kanban_username') || "교육생_" + Math.floor(Math.random() * 100);
+        usernameInput.value = myName;
+
+        usernameInput.addEventListener('change', () => {
+            myName = usernameInput.value.trim() || "익명";
+            localStorage.setItem('kanban_username', myName);
+        });
+
+        // --- 실시간 채팅 기능 ---
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const chatMessages = document.getElementById('chat-messages');
+
+        async function sendMessage() {
+          const text = chatInput.value.trim();
+          if (text === "") return;
+          try {
+            await addDoc(collection(db, "messages"), {
+              sender: myName,
+              text: text,
+              createdAt: serverTimestamp()
+            });
+            chatInput.value = "";
+          } catch (error) {
+            console.error("전송 오류:", error);
+          }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.isComposing) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+
+        const qChat = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+        onSnapshot(qChat, (snapshot) => {
+          chatMessages.innerHTML = '<div class="message"><strong>알림:</strong> 채팅방에 연결되었습니다.</div>';
+          snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const msgDiv = document.createElement('div');
+            
+            if (data.sender === myName) {
+              msgDiv.className = 'message my-message';
+            } else {
+              msgDiv.className = 'message';
+            }
+
+            msgDiv.innerHTML = `<strong>${data.sender}:</strong> ${data.text}`;
+            chatMessages.appendChild(msgDiv);
+          });
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+
+        // --- 칸반 카드 및 모달 기능 ---
+        const cardsData = {};
+
+        window.openAddModal = function(status) {
+            document.getElementById('modal-title').innerText = "새 업무 카드 추가";
+            document.getElementById('modal-card-id').value = "";
+            document.getElementById('modal-card-status').value = status;
+            document.getElementById('modal-card-name').value = "";
+            document.getElementById('modal-card-desc').value = "";
+            document.getElementById('modal-card-assignee').value = myName;
+            document.getElementById('modal-card-duedate').value = "";
+            document.getElementById('modal-delete-btn').style.display = "none";
+            document.getElementById('card-modal').style.display = "flex";
+        };
+
+        window.openEditModal = function(cardId) {
+            const card = cardsData[cardId];
+            if (!card) return;
+
+            document.getElementById('modal-title').innerText = "업무 카드 수정";
+            document.getElementById('modal-card-id').value = cardId;
+            document.getElementById('modal-card-status').value = card.status;
+            document.getElementById('modal-card-name').value = card.title || "";
+            document.getElementById('modal-card-desc').value = card.desc || "";
+            document.getElementById('modal-card-assignee').value = card.assignee || "";
+            document.getElementById('modal-card-duedate').value = card.dueDate || "";
+            document.getElementById('modal-delete-btn').style.display = "block";
+            document.getElementById('card-modal').style.display = "flex";
+        };
+
+        window.closeModal = function() {
+            document.getElementById('card-modal').style.display = "none";
+        };
+
+        window.saveCard = async function() {
+            const id = document.getElementById('modal-card-id').value;
+            const status = document.getElementById('modal-card-status').value;
+            const title = document.getElementById('modal-card-name').value.trim();
+            const desc = document.getElementById('modal-card-desc').value.trim();
+            const assignee = document.getElementById('modal-card-assignee').value.trim();
+            const dueDate = document.getElementById('modal-card-duedate').value;
+
+            if (!title) {
+                alert("제목을 입력해주세요.");
+                return;
+            }
+
+            try {
+                if (id) {
+                    await updateDoc(doc(db, "cards", id), { title, desc, assignee, dueDate });
+                } else {
+                    await addDoc(collection(db, "cards"), {
+                        title, desc, assignee, dueDate, status,
+                        createdAt: serverTimestamp()
+                    });
+                }
+                closeModal();
+            } catch (error) {
+                console.error("저장 오류:", error);
+            }
+        };
+
+        window.deleteCard = async function() {
+            const id = document.getElementById('modal-card-id').value;
+            if (!id) return;
+            if (confirm("정말로 이 업무 카드를 삭제하시겠습니까?")) {
+                try {
+                    await deleteDoc(doc(db, "cards", id));
+                    closeModal();
+                } catch (error) {
+                    console.error("삭제 오류:", error);
+                }
+            }
+        };
+
+        // 드래그 앤 드롭
+        window.allowDrop = function(ev) { ev.preventDefault(); };
+
+        window.drop = async function(ev) {
+          ev.preventDefault();
+          const cardId = ev.dataTransfer.getData("cardId");
+          let targetList = ev.target;
+          
+          while (targetList && !targetList.classList.contains('card-list')) {
+            targetList = targetList.parentElement;
+          }
+
+          if (targetList) {
+            const newStatus = targetList.id;
+            try {
+              await updateDoc(doc(db, "cards", cardId), { status: newStatus });
+            } catch (error) {
+              console.error("이동 오류:", error);
+            }
+          }
+        };
+
+        // 실시간 카드 감시
+        const qCards = query(collection(db, "cards"), orderBy("createdAt", "asc"));
+        onSnapshot(qCards, (snapshot) => {
+          document.getElementById('todo').innerHTML = '';
+          document.getElementById('doing').innerHTML = '';
+          document.getElementById('done').innerHTML = '';
+
+          snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const cardId = docSnap.id;
+            cardsData[cardId] = data;
+
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card';
+            cardEl.draggable = true;
+
+            let metaHTML = '';
+            if (data.assignee) metaHTML += `<span class="card-badge">👤 ${data.assignee}</span>`;
+            if (data.dueDate) metaHTML += `<span class="card-badge">📅 ${data.dueDate}</span>`;
+
+            cardEl.innerHTML = `
+                <div class="card-title">${data.title}</div>
+                <div class="card-meta">${metaHTML}</div>
+            `;
+
+            cardEl.addEventListener('click', () => openEditModal(cardId));
+
+            cardEl.addEventListener('dragstart', (e) => {
+              e.stopPropagation();
+              e.dataTransfer.setData("cardId", cardId);
+            });
+
+            const targetList = document.getElementById(data.status);
+            if (targetList) {
+              targetList.appendChild(cardEl);
+            }
+          });
+        });
+    </script>
+</body>
+</html>
