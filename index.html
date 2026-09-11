@@ -760,6 +760,7 @@
         let totalOnlineCount = 1;
         let onlineUsersList = [];
 
+        // 접속 정보 신호 보냄
         async function updatePresence() {
             const userPresenceRef = doc(db, "presence", myUserId);
             try {
@@ -772,9 +773,21 @@
             }
         }
 
-        setInterval(updatePresence, 30000);
+        // 창을 완전히 닫을 때 신뢰성 있게 DB에서 강제 삭제하기 위한 sendBeacon 요청
+        function removePresenceBeacon() {
+            const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/presence/${myUserId}`;
+            navigator.sendBeacon(url + "?method=DELETE");
+        }
+
+        // 10초 주기 하트비트 (빠른 감지)
+        setInterval(updatePresence, 10000);
         updatePresence();
 
+        // 💡 탭/창 종료 시 즉시 삭제 요청 전송
+        window.addEventListener('pagehide', removePresenceBeacon);
+        window.addEventListener('beforeunload', removePresenceBeacon);
+
+        // 실시간 접속자 목록 수신
         onSnapshot(collection(db, "presence"), (snapshot) => {
             const now = Date.now();
             const activeUsers = [];
@@ -783,8 +796,8 @@
                 const data = d.data();
                 if (data.lastSeen) {
                     const lastSeenTime = data.lastSeen.toDate ? data.lastSeen.toDate().getTime() : now;
-                    // 2분 이내 활동이 있는 사용자를 실시간 접속자로 인지
-                    if (now - lastSeenTime < 120000) {
+                    // 25초 이상 새로운 신호(하트비트)가 없거나 탭이 꺼진 경우 접속자에서 제외
+                    if (now - lastSeenTime < 25000) {
                         activeUsers.push(data.name || "익명");
                     }
                 }
