@@ -33,7 +33,6 @@
             overflow: hidden;
         }
 
-        /* 1. 상단 글로벌 헤더 */
         .app-header {
             height: 60px;
             background-color: var(--header-bg);
@@ -88,7 +87,6 @@
             width: 100px;
         }
 
-        /* 메인 콘텐츠 레이아웃 */
         .main-container {
             display: flex;
             flex: 1;
@@ -96,7 +94,6 @@
             overflow: hidden;
         }
 
-        /* 2. 좌측/중앙: 칸반 보드 */
         .board-container {
             flex: 1;
             padding: 24px;
@@ -137,7 +134,6 @@
             padding-right: 2px;
         }
 
-        /* 카드 디자인 */
         .card {
             background-color: var(--card-bg);
             padding: 16px;
@@ -205,13 +201,13 @@
             border-color: var(--lg-red);
         }
 
-        /* 3. 우측 실시간 채팅 */
         .chat-container {
             width: 380px;
             background-color: var(--header-bg);
             border-left: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .chat-header {
@@ -275,7 +271,6 @@
             background-color: #FAFAFA;
         }
 
-        /* 메시지 레이아웃 (시간 및 안 읽은 수 표시) */
         .msg-wrapper {
             display: flex;
             flex-direction: column;
@@ -388,6 +383,13 @@
             flex-direction: column;
             gap: 8px;
             background-color: #FFFFFF;
+            position: relative;
+        }
+
+        .chat-tools-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .chat-input-row {
@@ -425,7 +427,7 @@
             background-color: var(--lg-red-hover);
         }
 
-        .attach-btn {
+        .attach-btn, .emoji-toggle-btn {
             background-color: #F1F5F9 !important;
             color: #475569 !important;
             border: 1px solid var(--border-color) !important;
@@ -436,7 +438,41 @@
             width: fit-content;
         }
 
-        /* 4. 모달 스타일 */
+        /* 이모티콘 피커 (팝업) 스타일 */
+        .emoji-picker-box {
+            display: none;
+            position: absolute;
+            bottom: 105%;
+            left: 16px;
+            width: 280px;
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            z-index: 50;
+        }
+
+        .emoji-picker-box.active {
+            display: grid;
+        }
+
+        .emoji-btn {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            padding: 6px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.15s;
+        }
+
+        .emoji-btn:hover {
+            background: #F1F5F9;
+        }
+
         .modal-overlay {
             display: none;
             position: fixed;
@@ -504,7 +540,6 @@
 </head>
 <body>
 
-    <!-- 헤더 영역 -->
     <header class="app-header">
         <div class="header-title-area">
             <span class="logo-badge">LG Chemistry</span>
@@ -517,7 +552,6 @@
     </header>
 
     <div class="main-container">
-        <!-- 1. 칸반 보드 -->
         <main class="board-container">
             <div class="column">
                 <div class="column-header">To Do (할 일)</div>
@@ -538,21 +572,39 @@
             </div>
         </main>
 
-        <!-- 2. 실시간 채팅 -->
         <aside class="chat-container">
             <div class="chat-header">
                 <span class="chat-header-title">
                     팀 실시간 라이브 채팅
                     <span class="online-count-badge" id="online-count-display">1명</span>
                 </span>
-                <button class="noti-btn" id="noti-toggle-btn" onclick="requestNotificationPermission()">🔔 알림 켜기</button>
+                <button class="noti-btn" id="noti-toggle-btn" onclick="requestNotificationPermission()">🔔 알림 테스트 / 켜기</button>
             </div>
             <div class="chat-messages" id="chat-messages">
                 <div class="message"><strong>알림:</strong> 연결 중...</div>
             </div>
             <div class="chat-input-area">
-                <input type="file" id="chat-file-input" style="display: none;" onchange="handleChatFileUpload(event)">
-                <button type="button" class="attach-btn" onclick="document.getElementById('chat-file-input').click()">📁 사진/파일 첨부</button>
+                <!-- 이모티콘 피커 레이어 -->
+                <div class="emoji-picker-box" id="emoji-picker">
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('👏')">👏</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('✅')">✅</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🙏')">🙏</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('💡')">💡</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('💪')">💪</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('✨')">✨</button>
+                </div>
+
+                <div class="chat-tools-row">
+                    <input type="file" id="chat-file-input" style="display: none;" onchange="handleChatFileUpload(event)">
+                    <button type="button" class="attach-btn" onclick="document.getElementById('chat-file-input').click()">📁 첨부</button>
+                    <button type="button" class="emoji-toggle-btn" onclick="toggleEmojiPicker(event)">😊 이모티콘</button>
+                </div>
                 <div class="chat-input-row">
                     <input type="text" id="chat-input" placeholder="메시지 입력...">
                     <button id="send-btn">전송</button>
@@ -561,7 +613,6 @@
         </aside>
     </div>
 
-    <!-- 3. 카드 생성/수정 모달 -->
     <div class="modal-overlay" id="card-modal">
         <div class="modal">
             <h2 id="modal-title">업무 상세 정보</h2>
@@ -601,7 +652,6 @@
         </div>
     </div>
 
-    <!-- Firebase SDK 연동 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp, setDoc, arrayUnion } 
@@ -620,14 +670,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // 고유 사용자 ID 생성 또는 로드
         let myUserId = localStorage.getItem('kanban_uid');
         if (!myUserId) {
             myUserId = 'user_' + Math.random().toString(36).substring(2, 9);
             localStorage.setItem('kanban_uid', myUserId);
         }
 
-        // --- 닉네임 관리 ---
         const usernameInput = document.getElementById('username-input');
         let myName = localStorage.getItem('kanban_username') || "교육생_" + Math.floor(Math.random() * 100);
         usernameInput.value = myName;
@@ -638,7 +686,6 @@
             updatePresence();
         });
 
-        // --- 실시간 접속자 트래킹 (Presence System) ---
         let totalOnlineCount = 1;
         async function updatePresence() {
             const userPresenceRef = doc(db, "presence", myUserId);
@@ -671,18 +718,24 @@
             document.getElementById('online-count-display').innerText = `${totalOnlineCount}명`;
         });
 
-        // --- 데스크톱 브라우저 알림 권한 및 전송 ---
+        // --- 데스크톱 알림 세부 개선 ---
         window.requestNotificationPermission = function() {
             if (!("Notification" in window)) {
                 alert("이 브라우저는 데스크톱 알림을 지원하지 않습니다.");
                 return;
             }
+
+            if (Notification.permission === "denied") {
+                alert("브라우저 주소창 좌측의 [설정/열쇠 모양] 버튼을 클릭해 '알림'을 '허용'으로 바꾼 뒤 새로고침 해주세요.");
+                return;
+            }
+
             Notification.requestPermission().then((permission) => {
                 const btn = document.getElementById('noti-toggle-btn');
                 if (permission === "granted") {
                     btn.innerText = "🔔 알림 켜짐";
                     btn.style.color = "#22C55E";
-                    new Notification("LG화학 협업 보드", { body: "컴퓨터 알림이 성공적으로 설정되었습니다!" });
+                    triggerDesktopNotification("LG화학 협업 보드", "데스크톱 알림 테스트 성공!");
                 } else {
                     btn.innerText = "🔕 알림 차단됨";
                     btn.style.color = "#EF4444";
@@ -699,15 +752,40 @@
         }
 
         function triggerDesktopNotification(title, body) {
-            if (document.hidden && "Notification" in window && Notification.permission === "granted") {
-                new Notification(title, {
-                    body: body,
-                    tag: "lg-kanban-noti"
-                });
+            try {
+                if ("Notification" in window && Notification.permission === "granted") {
+                    const instance = new Notification(title, {
+                        body: body,
+                        icon: 'https://www.lgchem.com/favicon.ico'
+                    });
+                    setTimeout(() => instance.close(), 4000);
+                }
+            } catch (e) {
+                console.log("알림 생성 오류:", e);
             }
         }
 
-        // --- URL 하이퍼링크 변환 ---
+        // --- 이모티콘 피커 로직 ---
+        window.toggleEmojiPicker = function(event) {
+            event.stopPropagation();
+            const picker = document.getElementById('emoji-picker');
+            picker.classList.toggle('active');
+        };
+
+        window.insertEmoji = function(emoji) {
+            const chatInput = document.getElementById('chat-input');
+            chatInput.value += emoji;
+            chatInput.focus();
+            document.getElementById('emoji-picker').classList.remove('active');
+        };
+
+        document.addEventListener('click', (e) => {
+            const picker = document.getElementById('emoji-picker');
+            if (picker && picker.classList.contains('active') && !picker.contains(e.target)) {
+                picker.classList.remove('active');
+            }
+        });
+
         function autoLink(text) {
             if (!text) return "";
             const urlRegex = /(https?:\/\/[^\s<]+)/g;
@@ -716,7 +794,6 @@
             });
         }
 
-        // --- 시간 포맷 변환 ---
         function formatTime(timestamp) {
             if (!timestamp) return "";
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -728,7 +805,6 @@
             return `${ampm} ${hours}:${minutes}`;
         }
 
-        // --- 실시간 채팅 기능 ---
         const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
         const chatMessages = document.getElementById('chat-messages');
@@ -737,8 +813,8 @@
           const text = chatInput.value.trim();
           if (text === "" && !filePayload) return;
 
-          // 전송 버튼을 누르는 즉시 입력창 비우기
           chatInput.value = "";
+          document.getElementById('emoji-picker').classList.remove('active');
 
           try {
             const msgData = {
@@ -862,7 +938,6 @@
           chatMessages.scrollTop = chatMessages.scrollHeight;
         });
 
-        // --- 칸반 카드 및 모달 기능 ---
         const cardsData = {};
 
         window.handleModalFileUpload = function(event) {
@@ -971,7 +1046,6 @@
             }
         };
 
-        // 드래그 앤 드롭
         window.allowDrop = function(ev) { ev.preventDefault(); };
 
         window.drop = async function(ev) {
@@ -993,7 +1067,6 @@
           }
         };
 
-        // 실시간 카드 감시
         let isFirstCardLoad = true;
         const qCards = query(collection(db, "cards"), orderBy("createdAt", "asc"));
         onSnapshot(qCards, (snapshot) => {
