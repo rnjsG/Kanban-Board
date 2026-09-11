@@ -275,7 +275,7 @@
             background-color: #FAFAFA;
         }
 
-        /* 메시지 레이아웃 (시간 및 카톡 스타일 안 읽은 수 표시) */
+        /* 메시지 레이아웃 (시간 및 안 읽은 수 표시) */
         .msg-wrapper {
             display: flex;
             flex-direction: column;
@@ -305,7 +305,6 @@
             flex-direction: row-reverse;
         }
 
-        /* 메시지 메타 정보(시간 + 읽음 숫자) */
         .msg-info-column {
             display: flex;
             flex-direction: column;
@@ -320,7 +319,7 @@
         .unread-count {
             font-size: 10px;
             font-weight: 700;
-            color: #EAB308; /* 노란색/골드 카톡 읽음 표시 */
+            color: #EAB308;
         }
 
         .msg-time {
@@ -349,7 +348,6 @@
             border-top-right-radius: 2px;
         }
 
-        /* 하이퍼링크 스타일 */
         .message a, .card-title a, .card-desc a {
             color: #2563EB;
             text-decoration: underline;
@@ -359,7 +357,6 @@
             color: #FFD1DC;
         }
 
-        /* 채팅 이미지 및 파일 스타일 */
         .chat-file-img {
             max-width: 100%;
             border-radius: 8px;
@@ -655,11 +652,9 @@
             }
         }
 
-        // 30초마다 핑 보내기
         setInterval(updatePresence, 30000);
         updatePresence();
 
-        // 현재 온라인 유저 카운팅 (최근 2분 이내 데이터만 접속 중으로 판단)
         onSnapshot(collection(db, "presence"), (snapshot) => {
             const now = Date.now();
             let count = 0;
@@ -742,12 +737,15 @@
           const text = chatInput.value.trim();
           if (text === "" && !filePayload) return;
 
+          // 전송 버튼을 누르는 즉시 입력창 비우기
+          chatInput.value = "";
+
           try {
             const msgData = {
               sender: myName,
               text: text,
-              readBy: [myUserId], // 보낸 사람은 기본으로 읽음 처리
-              targetTotal: totalOnlineCount, // 전송 당시 접속 인원 수 기록
+              readBy: [myUserId],
+              targetTotal: totalOnlineCount,
               createdAt: serverTimestamp()
             };
 
@@ -758,7 +756,6 @@
             }
 
             await addDoc(collection(db, "messages"), msgData);
-            chatInput.value = "";
           } catch (error) {
             console.error("전송 오류:", error);
           }
@@ -813,7 +810,6 @@
             const data = docSnap.data();
             const msgId = docSnap.id;
             
-            // 아직 내 아이디가 readBy에 포함 안 되어 있다면 자동으로 읽음 추가 처리
             const readByList = data.readBy || [];
             if (!readByList.includes(myUserId)) {
                 updateDoc(doc(db, "messages", msgId), {
@@ -829,7 +825,6 @@
             let senderHTML = isMe ? '' : `<div class="msg-sender">${data.sender}</div>`;
             let fileHTML = '';
             
-            // 안 읽은 사람 수 계산 (전체 목표 - 이미 읽은 사람 수)
             const targetTotal = data.targetTotal || Math.max(totalOnlineCount, readByList.length);
             const unreadCount = Math.max(0, targetTotal - readByList.length);
             const unreadHTML = unreadCount > 0 ? `<span class="unread-count">${unreadCount}</span>` : '';
