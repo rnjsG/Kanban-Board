@@ -51,7 +51,6 @@
             gap: 12px;
         }
 
-        /* 이미지 스타일에 맞춘 LG Chem 배지 디자인 */
         .logo-badge {
             background-color: var(--lg-red);
             color: white;
@@ -258,7 +257,6 @@
             color: #1E293B;
         }
 
-        /* 접속자 목록 팝업 */
         .online-users-popover {
             display: none;
             position: absolute;
@@ -545,7 +543,7 @@
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.4);
+            background: rgba(15, 23, 42, 0.5);
             backdrop-filter: blur(4px);
             justify-content: center;
             align-items: center;
@@ -556,7 +554,7 @@
             background: white;
             padding: 28px;
             border-radius: 12px;
-            width: 440px;
+            width: 420px;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
@@ -614,7 +612,7 @@
         </div>
         <div class="user-profile">
             <span>👤 내 이름:</span>
-            <input type="text" id="username-input" value="">
+            <input type="text" id="username-input" value="" readonly style="cursor: pointer;" onclick="promptChangeUser()" title="이름을 변경하려면 클릭하세요">
         </div>
     </header>
 
@@ -646,7 +644,6 @@
                     <span class="online-count-badge" id="online-count-display" onclick="toggleOnlineUsersPopover(event)">1명</span>
                 </span>
                 
-                <!-- 접속자 목록 팝업 -->
                 <div class="online-users-popover" id="online-users-popover">
                     <div class="online-users-popover-title">현재 참여자 목록</div>
                     <ul class="online-users-list" id="online-users-list">
@@ -657,7 +654,7 @@
                 <button class="noti-btn" id="noti-toggle-btn" onclick="requestNotificationPermission()">🔔 알림 권한 설정</button>
             </div>
             <div class="chat-messages" id="chat-messages">
-                <div class="message"><strong>알림:</strong> 연결 중...</div>
+                <div class="message"><strong>알림:</strong> 로그인 대기 중...</div>
             </div>
             <div class="chat-input-area">
                 <div class="emoji-picker-box" id="emoji-picker">
@@ -688,6 +685,7 @@
         </aside>
     </div>
 
+    <!-- 카드 상세 모달 -->
     <div class="modal-overlay" id="card-modal">
         <div class="modal">
             <h2 id="modal-title">업무 상세 정보</h2>
@@ -696,11 +694,11 @@
             
             <label>
                 카드 제목
-                <input type="text" id="modal-card-name" placeholder="제목을 입력하세요 (URL 입력 시 링크 변환)">
+                <input type="text" id="modal-card-name" placeholder="제목을 입력하세요">
             </label>
             <label>
                 상세 설명
-                <textarea id="modal-card-desc" rows="3" placeholder="상세 내용이나 메모를 입력하세요 (URL 입력 시 링크 변환)"></textarea>
+                <textarea id="modal-card-desc" rows="3" placeholder="상세 내용이나 메모를 입력하세요"></textarea>
             </label>
             <label>
                 담당자
@@ -727,9 +725,28 @@
         </div>
     </div>
 
+    <!-- 비밀번호/가입 모달 -->
+    <div class="modal-overlay" id="auth-modal" style="display: flex;">
+        <div class="modal">
+            <h2 id="auth-title">로그인 / 회원가입</h2>
+            <p style="font-size: 13px; color: var(--text-sub);">닉네임과 비밀번호(숫자 4자리)를 입력하세요.</p>
+            <label>
+                닉네임
+                <input type="text" id="auth-name-input" placeholder="이름 또는 닉네임">
+            </label>
+            <label>
+                비밀번호 (숫자 4자리)
+                <input type="password" id="auth-pin-input" maxlength="4" pattern="\d{4}" placeholder="예: 1234">
+            </label>
+            <div class="modal-buttons">
+                <button class="btn-save" onclick="handleAuthSubmit()">확인 / 시작하기</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, orderBy, serverTimestamp, setDoc, arrayUnion, Timestamp } 
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, orderBy, serverTimestamp, setDoc, getDoc, arrayUnion, Timestamp } 
           from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -751,49 +768,74 @@
             localStorage.setItem('kanban_uid', myUserId);
         }
 
-        // 사용자 최초 입장 시간 기록 (이전 대화 조회 방지용)
-        let myJoinTimeMs = localStorage.getItem('kanban_join_time');
-        if (!myJoinTimeMs) {
-            myJoinTimeMs = Date.now();
-            localStorage.setItem('kanban_join_time', myJoinTimeMs);
-        }
-        const myJoinTimestamp = Timestamp.fromMillis(Number(myJoinTimeMs));
-
-        const usernameInput = document.getElementById('username-input');
-        let myName = localStorage.getItem('kanban_username') || "교육생_" + Math.floor(Math.random() * 100);
-        usernameInput.value = myName;
-
+        let myName = localStorage.getItem('kanban_username') || "";
+        let myJoinTimestamp = null;
         let totalOnlineCount = 1;
         let onlineUsersList = [];
+        let chatUnsubscribe = null;
 
-        // 이름 변경 및 중복 확인 로직
-        usernameInput.addEventListener('change', () => {
-            const newName = usernameInput.value.trim();
+        const authModal = document.getElementById('auth-modal');
+        const authNameInput = document.getElementById('auth-name-input');
+        const authPinInput = document.getElementById('auth-pin-input');
+        const usernameInput = document.getElementById('username-input');
 
-            if (!newName) {
-                alert("이름을 입력해 주세요.");
-                usernameInput.value = myName;
+        if (myName) {
+            authNameInput.value = myName;
+        }
+
+        // 로그인 / 가입 로직
+        window.handleAuthSubmit = async function() {
+            const inputName = authNameInput.value.trim();
+            const inputPin = authPinInput.value.trim();
+
+            if (!inputName) {
+                alert("닉네임을 입력해 주세요.");
                 return;
             }
 
-            if (newName === myName) return;
-
-            const isDuplicate = onlineUsersList.some(user => user === newName);
-
-            if (isDuplicate) {
-                alert(`'${newName}'(은)는 이미 다른 사용자가 사용 중입니다. 다른 이름을 입력해 주세요.`);
-                usernameInput.value = myName;
-                usernameInput.focus();
+            if (!/^\d{4}$/.test(inputPin)) {
+                alert("비밀번호는 숫자 4자리로 입력해 주세요.");
                 return;
             }
 
-            myName = newName;
+            const userRef = doc(db, "users", inputName);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                if (userData.pin !== inputPin) {
+                    alert("비밀번호가 일치하지 않습니다.");
+                    return;
+                }
+                myJoinTimestamp = userData.joinedAt;
+            } else {
+                // 신규 등록 (가입 시점의 Timestamp 생성)
+                myJoinTimestamp = Timestamp.now();
+                await setDoc(userRef, {
+                    name: inputName,
+                    pin: inputPin,
+                    joinedAt: myJoinTimestamp
+                });
+            }
+
+            myName = inputName;
             localStorage.setItem('kanban_username', myName);
-            updatePresence();
-        });
+            usernameInput.value = myName;
+            authModal.style.display = "none";
 
-        // 접속 정보 신호 보냄
+            updatePresence();
+            startChatListener();
+        };
+
+        window.promptChangeUser = function() {
+            authNameInput.value = myName;
+            authPinInput.value = "";
+            authModal.style.display = "flex";
+        };
+
+        // 접속 상태 갱신
         async function updatePresence() {
+            if (!myName) return;
             const userPresenceRef = doc(db, "presence", myUserId);
             try {
                 await setDoc(userPresenceRef, {
@@ -805,19 +847,17 @@
             }
         }
 
-        // 창을 완전히 닫을 때 DB에서 삭제하기 위한 sendBeacon 요청
         function removePresenceBeacon() {
             const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/presence/${myUserId}`;
             navigator.sendBeacon(url + "?method=DELETE");
         }
 
         setInterval(updatePresence, 10000);
-        updatePresence();
 
         window.addEventListener('pagehide', removePresenceBeacon);
         window.addEventListener('beforeunload', removePresenceBeacon);
 
-        // 실시간 접속자 목록 수신
+        // 접속자 목록 수신
         onSnapshot(collection(db, "presence"), (snapshot) => {
             const now = Date.now();
             const activeUsers = [];
@@ -842,14 +882,11 @@
             }
         });
 
-        // 접속자 목록 팝업 토글
         window.toggleOnlineUsersPopover = function(event) {
             event.stopPropagation();
-            const popover = document.getElementById('online-users-popover');
-            popover.classList.toggle('active');
+            document.getElementById('online-users-popover').classList.toggle('active');
         };
 
-        // 알림 설정
         window.requestNotificationPermission = function() {
             if (!("Notification" in window)) {
                 alert("이 브라우저는 데스크톱 알림을 지원하지 않습니다.");
@@ -857,7 +894,7 @@
             }
 
             if (Notification.permission === "denied") {
-                alert("브라우저 주소창 좌측의 [설정/열쇠 모양] 버튼을 클릭해 '알림'을 '허용'으로 바꾼 뒤 새로고침 해주세요.");
+                alert("브라우저 설정에서 알림을 허용해주세요.");
                 return;
             }
 
@@ -888,24 +925,20 @@
                         body: body,
                         icon: 'https://www.lgchem.com/favicon.ico'
                     });
-                    
                     instance.onclick = function() {
                         window.focus();
                         instance.close();
                     };
-
                     setTimeout(() => instance.close(), 4000);
                 }
             } catch (e) {
-                console.log("알림 생성 오류:", e);
+                console.log("알림 오류:", e);
             }
         }
 
-        // 이모티콘 피커 로직
         window.toggleEmojiPicker = function(event) {
             event.stopPropagation();
-            const picker = document.getElementById('emoji-picker');
-            picker.classList.toggle('active');
+            document.getElementById('emoji-picker').classList.toggle('active');
         };
 
         window.insertEmoji = function(emoji) {
@@ -951,6 +984,11 @@
         const chatMessages = document.getElementById('chat-messages');
 
         async function sendMessage(filePayload = null) {
+          if (!myName) {
+            alert("로그인이 필요합니다.");
+            return;
+          }
+
           const text = chatInput.value.trim();
           if (text === "" && !filePayload) return;
 
@@ -1008,84 +1046,88 @@
             reader.readAsDataURL(file);
         };
 
-        let isFirstChatLoad = true;
+        // 가입 시각 이후의 메시지만 수신하는 리스너
+        function startChatListener() {
+            if (chatUnsubscribe) chatUnsubscribe();
 
-        // 내가 처음 접속한 이후의 메시지만 불러오도록 where 필터링 적용
-        const qChat = query(
-            collection(db, "messages"), 
-            where("createdAt", ">=", myJoinTimestamp),
-            orderBy("createdAt", "asc")
-        );
+            let isFirstChatLoad = true;
+            const qChat = query(
+                collection(db, "messages"), 
+                where("createdAt", ">=", myJoinTimestamp),
+                orderBy("createdAt", "asc")
+            );
 
-        onSnapshot(qChat, (snapshot) => {
-          chatMessages.innerHTML = '<div class="message"><strong>알림:</strong> 채팅방에 연결되었습니다.</div>';
-          
-          snapshot.docChanges().forEach((change) => {
-            if (change.type === "added" && !isFirstChatLoad) {
-                const newMsg = change.doc.data();
-                if (newMsg.sender !== myName) {
-                    const notifyText = newMsg.text || (newMsg.fileName ? `[파일 첨부] ${newMsg.fileName}` : "새 메시지가 도착했습니다.");
-                    triggerDesktopNotification(`💬 ${newMsg.sender}님의 메시지`, notifyText);
+            chatUnsubscribe = onSnapshot(qChat, (snapshot) => {
+              chatMessages.innerHTML = '<div class="message"><strong>알림:</strong> 채팅방에 연결되었습니다.</div>';
+              
+              snapshot.docChanges().forEach((change) => {
+                if (change.type === "added" && !isFirstChatLoad) {
+                    const newMsg = change.doc.data();
+                    if (newMsg.sender !== myName) {
+                        const notifyText = newMsg.text || (newMsg.fileName ? `[파일 첨부] ${newMsg.fileName}` : "새 메시지가 도착했습니다.");
+                        triggerDesktopNotification(`💬 ${newMsg.sender}님의 메시지`, notifyText);
+                    }
                 }
-            }
-          });
+              });
 
-          snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            const msgId = docSnap.id;
-            
-            const readByList = data.readBy || [];
-            if (!readByList.includes(myUserId)) {
-                updateDoc(doc(db, "messages", msgId), {
-                    readBy: arrayUnion(myUserId)
-                }).catch(() => {});
-            }
-
-            const msgWrapper = document.createElement('div');
-            const isMe = data.sender === myName;
-            
-            msgWrapper.className = isMe ? 'msg-wrapper my-msg-wrapper' : 'msg-wrapper';
-
-            let senderHTML = isMe ? '' : `<div class="msg-sender">${data.sender}</div>`;
-            let fileHTML = '';
-            
-            const targetTotal = data.targetTotal || Math.max(totalOnlineCount, readByList.length);
-            const unreadCount = Math.max(0, targetTotal - readByList.length);
-            const unreadHTML = unreadCount > 0 ? `<span class="unread-count">${unreadCount}</span>` : '';
-            
-            let timeHTML = data.createdAt ? `<span class="msg-time">${formatTime(data.createdAt)}</span>` : '';
-
-            if (data.fileData) {
-                if (data.fileType && data.fileType.startsWith('image/')) {
-                    fileHTML = `<br><img src="${data.fileData}" class="chat-file-img" alt="첨부 이미지">`;
-                } else {
-                    fileHTML = `<br><a href="${data.fileData}" download="${data.fileName}" class="chat-file-link">💾 ${data.fileName}</a>`;
+              snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const msgId = docSnap.id;
+                
+                const readByList = data.readBy || [];
+                if (!readByList.includes(myUserId)) {
+                    updateDoc(doc(db, "messages", msgId), {
+                        readBy: arrayUnion(myUserId)
+                    }).catch(() => {});
                 }
-            }
 
-            const contentHTML = autoLink(data.text || "");
+                const msgWrapper = document.createElement('div');
+                const isMe = data.sender === myName;
+                
+                msgWrapper.className = isMe ? 'msg-wrapper my-msg-wrapper' : 'msg-wrapper';
 
-            msgWrapper.innerHTML = `
-                ${senderHTML}
-                <div class="msg-content-row">
-                    <div class="message">
-                        ${contentHTML}
-                        ${fileHTML}
+                let senderHTML = isMe ? '' : `<div class="msg-sender">${data.sender}</div>`;
+                let fileHTML = '';
+                
+                const targetTotal = data.targetTotal || Math.max(totalOnlineCount, readByList.length);
+                const unreadCount = Math.max(0, targetTotal - readByList.length);
+                const unreadHTML = unreadCount > 0 ? `<span class="unread-count">${unreadCount}</span>` : '';
+                
+                let timeHTML = data.createdAt ? `<span class="msg-time">${formatTime(data.createdAt)}</span>` : '';
+
+                if (data.fileData) {
+                    if (data.fileType && data.fileType.startsWith('image/')) {
+                        fileHTML = `<br><img src="${data.fileData}" class="chat-file-img" alt="첨부 이미지">`;
+                    } else {
+                        fileHTML = `<br><a href="${data.fileData}" download="${data.fileName}" class="chat-file-link">💾 ${data.fileName}</a>`;
+                    }
+                }
+
+                const contentHTML = autoLink(data.text || "");
+
+                msgWrapper.innerHTML = `
+                    ${senderHTML}
+                    <div class="msg-content-row">
+                        <div class="message">
+                            ${contentHTML}
+                            ${fileHTML}
+                        </div>
+                        <div class="msg-info-column">
+                            ${unreadHTML}
+                            ${timeHTML}
+                        </div>
                     </div>
-                    <div class="msg-info-column">
-                        ${unreadHTML}
-                        ${timeHTML}
-                    </div>
-                </div>
-            `;
+                `;
 
-            chatMessages.appendChild(msgWrapper);
-          });
+                chatMessages.appendChild(msgWrapper);
+              });
 
-          isFirstChatLoad = false;
-          chatMessages.scrollTop = chatMessages.scrollHeight;
-        });
+              isFirstChatLoad = false;
+              chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+        }
 
+        // 보드 카드 로직
         const cardsData = {};
 
         window.handleModalFileUpload = function(event) {
