@@ -51,20 +51,24 @@
             gap: 12px;
         }
 
+        /* 이미지 스타일에 맞춘 LG Chem 배지 디자인 */
         .logo-badge {
             background-color: var(--lg-red);
             color: white;
             font-weight: 800;
-            font-size: 13px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            letter-spacing: 0.5px;
+            font-size: 14px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            letter-spacing: 0.3px;
+            display: inline-block;
+            line-height: 1;
         }
 
         .header-title-area h1 {
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 19px;
+            font-weight: 800;
             color: var(--text-main);
+            letter-spacing: -0.3px;
         }
 
         .user-profile {
@@ -606,7 +610,7 @@
     <header class="app-header">
         <div class="header-title-area">
             <span class="logo-badge">LG Chem</span>
-            <h1>LG화학 K뉴딜 아카데미 오산 2기 6조 </h1>
+            <h1>LG화학 K뉴딜 아카데미 오산 2기 6조</h1>
         </div>
         <div class="user-profile">
             <span>👤 내 이름:</span>
@@ -747,7 +751,7 @@
             localStorage.setItem('kanban_uid', myUserId);
         }
 
-        // 💡 사용자 최초 입장 시간 기록 (이전 대화 조회 방지용)
+        // 사용자 최초 입장 시간 기록 (이전 대화 조회 방지용)
         let myJoinTimeMs = localStorage.getItem('kanban_join_time');
         if (!myJoinTimeMs) {
             myJoinTimeMs = Date.now();
@@ -1006,7 +1010,7 @@
 
         let isFirstChatLoad = true;
 
-        // 💡 [핵심] 내가 처음 접속한 이후의 메시지만 불러오도록 where 필터링 적용
+        // 내가 처음 접속한 이후의 메시지만 불러오도록 where 필터링 적용
         const qChat = query(
             collection(db, "messages"), 
             where("createdAt", ">=", myJoinTimestamp),
