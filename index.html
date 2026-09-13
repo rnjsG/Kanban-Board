@@ -454,7 +454,6 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            position: relative;
         }
 
         .chat-input-row {
@@ -476,7 +475,7 @@
             border-color: var(--lg-red);
         }
 
-        .chat-input-area #send-btn {
+        .chat-input-area button {
             padding: 10px 18px;
             background-color: var(--lg-red);
             color: white;
@@ -488,7 +487,7 @@
             transition: background 0.2s;
         }
 
-        .chat-input-area #send-btn:hover {
+        .chat-input-area button:hover {
             background-color: var(--lg-red-hover);
         }
 
@@ -503,46 +502,38 @@
             width: fit-content;
         }
 
-        /* 💡 이모티콘 피커 박스 레이아웃 및 짤림 수정 */
         .emoji-picker-box {
             display: none;
             position: absolute;
-            bottom: calc(100% + 8px);
-            left: 0;
-            width: 270px;
+            bottom: 105%;
+            left: 16px;
+            width: 280px;
             background: #FFFFFF;
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 10px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             grid-template-columns: repeat(6, 1fr);
-            gap: 4px;
-            z-index: 100;
+            gap: 6px;
+            z-index: 50;
         }
 
         .emoji-picker-box.active {
             display: grid;
         }
 
-        /* 💡 이모티콘 버튼 빨간색 배경 덮임 현상 강제 초기화 (!important) */
-        .emoji-picker-box button.emoji-btn {
-            background: transparent !important;
-            background-color: transparent !important;
-            border: none !important;
-            border-radius: 8px !important;
-            font-size: 20px !important;
-            padding: 6px 0 !important;
+        .emoji-btn {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            padding: 6px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100% !important;
-            height: 38px !important;
+            border-radius: 6px;
             transition: background 0.15s;
         }
 
-        .emoji-picker-box button.emoji-btn:hover {
-            background-color: #F1F5F9 !important;
+        .emoji-btn:hover {
+            background: #F1F5F9;
         }
 
         .modal-overlay {
@@ -665,25 +656,25 @@
                 <div class="message"><strong>알림:</strong> 연결 중...</div>
             </div>
             <div class="chat-input-area">
+                <div class="emoji-picker-box" id="emoji-picker">
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('👏')">👏</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('✅')">✅</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🙏')">🙏</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('💡')">💡</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('💪')">💪</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('✨')">✨</button>
+                </div>
+
                 <div class="chat-tools-row">
                     <input type="file" id="chat-file-input" style="display: none;" onchange="handleChatFileUpload(event)">
                     <button type="button" class="attach-btn" onclick="document.getElementById('chat-file-input').click()">📁 첨부</button>
                     <button type="button" class="emoji-toggle-btn" onclick="toggleEmojiPicker(event)">😊 이모티콘</button>
-                    
-                    <div class="emoji-picker-box" id="emoji-picker">
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('👏')">👏</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('✅')">✅</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('🙏')">🙏</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('💡')">💡</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('💪')">💪</button>
-                        <button type="button" class="emoji-btn" onclick="insertEmoji('✨')">✨</button>
-                    </div>
                 </div>
                 <div class="chat-input-row">
                     <input type="text" id="chat-input" placeholder="메시지 입력...">
@@ -734,7 +725,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp, setDoc, arrayUnion } 
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, orderBy, serverTimestamp, setDoc, arrayUnion, Timestamp } 
           from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -755,6 +746,14 @@
             myUserId = 'user_' + Math.random().toString(36).substring(2, 9);
             localStorage.setItem('kanban_uid', myUserId);
         }
+
+        // 💡 사용자 최초 입장 시간 기록 (이전 대화 조회 방지용)
+        let myJoinTimeMs = localStorage.getItem('kanban_join_time');
+        if (!myJoinTimeMs) {
+            myJoinTimeMs = Date.now();
+            localStorage.setItem('kanban_join_time', myJoinTimeMs);
+        }
+        const myJoinTimestamp = Timestamp.fromMillis(Number(myJoinTimeMs));
 
         const usernameInput = document.getElementById('username-input');
         let myName = localStorage.getItem('kanban_username') || "교육생_" + Math.floor(Math.random() * 100);
@@ -802,17 +801,15 @@
             }
         }
 
-        // 창을 완전히 닫을 때 DB에서 강제 삭제하기 위한 sendBeacon 요청
+        // 창을 완전히 닫을 때 DB에서 삭제하기 위한 sendBeacon 요청
         function removePresenceBeacon() {
             const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/presence/${myUserId}`;
             navigator.sendBeacon(url + "?method=DELETE");
         }
 
-        // 10초 주기 하트비트
         setInterval(updatePresence, 10000);
         updatePresence();
 
-        // 탭/창 종료 시 즉시 삭제 요청 전송
         window.addEventListener('pagehide', removePresenceBeacon);
         window.addEventListener('beforeunload', removePresenceBeacon);
 
@@ -841,14 +838,14 @@
             }
         });
 
-        // --- 접속자 목록 팝업 토글 ---
+        // 접속자 목록 팝업 토글
         window.toggleOnlineUsersPopover = function(event) {
             event.stopPropagation();
             const popover = document.getElementById('online-users-popover');
             popover.classList.toggle('active');
         };
 
-        // --- 알림 설정 ---
+        // 알림 설정
         window.requestNotificationPermission = function() {
             if (!("Notification" in window)) {
                 alert("이 브라우저는 데스크톱 알림을 지원하지 않습니다.");
@@ -900,7 +897,7 @@
             }
         }
 
-        // --- 이모티콘 피커 로직 ---
+        // 이모티콘 피커 로직
         window.toggleEmojiPicker = function(event) {
             event.stopPropagation();
             const picker = document.getElementById('emoji-picker');
@@ -914,7 +911,6 @@
             document.getElementById('emoji-picker').classList.remove('active');
         };
 
-        // 바깥 영역 클릭 시 팝업 닫기
         document.addEventListener('click', (e) => {
             const emojiPicker = document.getElementById('emoji-picker');
             if (emojiPicker && emojiPicker.classList.contains('active') && !emojiPicker.contains(e.target)) {
@@ -1009,7 +1005,14 @@
         };
 
         let isFirstChatLoad = true;
-        const qChat = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+
+        // 💡 [핵심] 내가 처음 접속한 이후의 메시지만 불러오도록 where 필터링 적용
+        const qChat = query(
+            collection(db, "messages"), 
+            where("createdAt", ">=", myJoinTimestamp),
+            orderBy("createdAt", "asc")
+        );
+
         onSnapshot(qChat, (snapshot) => {
           chatMessages.innerHTML = '<div class="message"><strong>알림:</strong> 채팅방에 연결되었습니다.</div>';
           
