@@ -819,7 +819,6 @@
                     return;
                 }
             }
-            // 저장된 정보가 없거나 검증 실패 시 모달 표시
             authNameInput.value = myName;
             authPinInput.value = "";
             authModal.style.display = "flex";
@@ -943,6 +942,7 @@
             document.getElementById('online-users-popover').classList.toggle('active');
         };
 
+        // 데스크톱 알림 권한 요청
         window.requestNotificationPermission = function() {
             if (!("Notification" in window)) {
                 alert("이 브라우저는 데스크톱 알림을 지원하지 않습니다.");
@@ -974,6 +974,7 @@
             }
         }
 
+        // 데스크톱 알림 팝업 트리거
         function triggerDesktopNotification(title, body) {
             try {
                 if (document.hidden && "Notification" in window && Notification.permission === "granted") {
