@@ -21,7 +21,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
         }
 
         body {
@@ -518,19 +518,22 @@
             width: fit-content;
         }
 
+        /* 이모티콘 피커 레이아웃 보완 */
         .emoji-picker-box {
             display: none;
             position: absolute;
             bottom: 105%;
             left: 16px;
-            width: 280px;
+            width: 320px;
+            max-height: 220px;
+            overflow-y: auto;
             background: #FFFFFF;
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 10px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            grid-template-columns: repeat(6, 1fr);
-            gap: 6px;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
             z-index: 50;
         }
 
@@ -539,17 +542,23 @@
         }
 
         .emoji-btn {
-            background: transparent;
-            border: none;
-            font-size: 20px;
-            padding: 6px;
+            background: transparent !important;
+            border: none !important;
+            font-size: 18px !important;
+            padding: 4px !important;
             cursor: pointer;
             border-radius: 6px;
             transition: background 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            height: 32px;
+            width: 32px;
         }
 
         .emoji-btn:hover {
-            background: #F1F5F9;
+            background: #F1F5F9 !important;
         }
 
         .modal-overlay {
@@ -666,12 +675,13 @@
                     </ul>
                 </div>
 
-                <button class="noti-btn" id="noti-toggle-btn" onclick="requestNotificationPermission()">🔔 알림 권한 설정</button>
+                <button class="noti-btn" id="noti-toggle-btn" onclick="toggleNotificationSetting()">🔔 알림 권한 설정</button>
             </div>
             <div class="chat-messages" id="chat-messages">
                 <div class="message"><strong>알림:</strong> 로그인 대기 중...</div>
             </div>
             <div class="chat-input-area">
+                <!-- 확충된 이모티콘 목록 -->
                 <div class="emoji-picker-box" id="emoji-picker">
                     <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
                     <button type="button" class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
@@ -685,6 +695,42 @@
                     <button type="button" class="emoji-btn" onclick="insertEmoji('💡')">💡</button>
                     <button type="button" class="emoji-btn" onclick="insertEmoji('💪')">💪</button>
                     <button type="button" class="emoji-btn" onclick="insertEmoji('✨')">✨</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('😎')">😎</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🤔')">🤔</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('😭')">😭</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('😍')">😍</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🙌')">🙌</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🥳')">🥳</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🚀')">🚀</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('📌')">📌</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('📝')">📝</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('⭐')">⭐</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('💯')">💯</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('👀')">👀</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('👌')">👌</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🤝')">🤝</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('💖')">💖</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🙋‍♂️')">🙋‍♂️</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🙋‍♀️')">🙋‍♀️</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('️⚠️')">⚠️</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('❓')">❓</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('❗')">❗</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('☕')">☕</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🍕')">🍕</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🎁')">🎁</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('⏰')">⏰</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('📢')">📢</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🎯')">🎯</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🏆')">🏆</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🍀')">🍀</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('😴')">😴</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('🤯')">🤯</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('😱')">😱</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('💩')">💩</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('👎')">👎</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('👊')">👊</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('✌️')">✌️</button>
                 </div>
 
                 <div class="chat-tools-row">
@@ -785,6 +831,7 @@
 
         let myName = localStorage.getItem('kanban_username') || "";
         let myPin = localStorage.getItem('kanban_pin') || "";
+        let isNotificationMuted = localStorage.getItem('kanban_noti_muted') === 'true'; // 알림 끄기 설정 관리
         let myJoinTimestamp = null;
         let totalOnlineCount = 1;
         let onlineUsersList = [];
@@ -936,8 +983,14 @@
             document.getElementById('online-users-popover').classList.toggle('active');
         };
 
-        // 데스크톱 알림 발송 함수
+        function isUserAway() {
+            return document.hidden || !document.hasFocus();
+        }
+
+        // 알림 발송 함수 (사용자가 알림을 껐거나 화면에 집중해 있으면 발송 안 함)
         function triggerDesktopNotification(title, body) {
+            if (isNotificationMuted) return; // 알림 끄기 설정된 경우 동작 안함
+
             try {
                 if ("Notification" in window && Notification.permission === "granted") {
                     const instance = new Notification(title, {
@@ -955,38 +1008,64 @@
             }
         }
 
-        // 알림 권한 설정 및 테스트 발송 함수
-        window.requestNotificationPermission = function() {
+        // 알림 UI 업데이트 함수
+        function updateNotiButtonUI() {
+            const btn = document.getElementById('noti-toggle-btn');
+            if (!("Notification" in window)) {
+                btn.innerText = "🔕 알림 미지원";
+                return;
+            }
+
+            if (Notification.permission === "denied") {
+                btn.innerText = "🔕 알림 차단됨";
+                btn.style.color = "#EF4444";
+            } else if (Notification.permission === "granted") {
+                if (isNotificationMuted) {
+                    btn.innerText = "🔕 알림 끔 (Mute)";
+                    btn.style.color = "#6C757D";
+                } else {
+                    btn.innerText = "🔔 알림 켜짐";
+                    btn.style.color = "#22C55E";
+                }
+            } else {
+                btn.innerText = "🔔 알림 권한 설정";
+                btn.style.color = "#475569";
+            }
+        }
+
+        // 알림 설정 토글 함수 (켜기 / 끄기 / 권한 요청)
+        window.toggleNotificationSetting = function() {
             if (!("Notification" in window)) {
                 alert("이 브라우저는 데스크톱 알림을 지원하지 않습니다.");
                 return;
             }
 
-            Notification.requestPermission().then((permission) => {
-                const btn = document.getElementById('noti-toggle-btn');
-                if (permission === "granted") {
-                    btn.innerText = "🔔 알림 켜짐";
-                    btn.style.color = "#22C55E";
-                    triggerDesktopNotification("알림 테스트", "데스크톱 알림 권한이 허용되었습니다! (다른 탭으로 나가 있을 때만 작동합니다)");
-                } else if (permission === "denied") {
-                    btn.innerText = "🔕 알림 차단됨";
-                    btn.style.color = "#EF4444";
-                    alert("주소창 좌측의 '🔒 사이트 설정'에서 알림 권한을 '허용'으로 변경해주세요.");
+            if (Notification.permission === "granted") {
+                // 이미 권한이 있을 경우 ON/OFF 토글
+                isNotificationMuted = !isNotificationMuted;
+                localStorage.setItem('kanban_noti_muted', isNotificationMuted);
+                updateNotiButtonUI();
+                
+                if (!isNotificationMuted) {
+                    triggerDesktopNotification("알림 활성화", "페이지 밖으로 나갔을 때 알림을 수신합니다.");
                 }
-            });
+            } else if (Notification.permission === "denied") {
+                alert("주소창 좌측의 '🔒 사이트 설정'에서 알림 권한을 '허용'으로 변경해주세요.");
+            } else {
+                // 권한 요청
+                Notification.requestPermission().then((permission) => {
+                    if (permission === "granted") {
+                        isNotificationMuted = false;
+                        localStorage.setItem('kanban_noti_muted', 'false');
+                        triggerDesktopNotification("알림 권한 설정 완료", "페이지 밖으로 나갔을 때만 알림이 전송됩니다.");
+                    }
+                    updateNotiButtonUI();
+                });
+            }
         };
 
-        // 초기 알림 상태 체크
-        if ("Notification" in window) {
-            const btn = document.getElementById('noti-toggle-btn');
-            if (Notification.permission === "granted") {
-                btn.innerText = "🔔 알림 켜짐";
-                btn.style.color = "#22C55E";
-            } else if (Notification.permission === "denied") {
-                btn.innerText = "🔕 알림 차단됨";
-                btn.style.color = "#EF4444";
-            }
-        }
+        // 초기 알림 버튼 상태 설정
+        updateNotiButtonUI();
 
         window.toggleEmojiPicker = function(event) {
             event.stopPropagation();
@@ -1114,8 +1193,7 @@
               snapshot.docChanges().forEach((change) => {
                 if (change.type === "added" && !isFirstChatLoad) {
                     const newMsg = change.doc.data();
-                    // 내 탭이 비활성화(document.hidden) 상태이고 내가 보낸 메시지가 아닐 때만 알림 발생
-                    if (document.hidden && newMsg.sender !== myName) {
+                    if (isUserAway() && newMsg.sender !== myName) {
                         const notifyText = newMsg.text || (newMsg.fileName ? `[파일 첨부] ${newMsg.fileName}` : "새 메시지가 도착했습니다.");
                         triggerDesktopNotification(`💬 ${newMsg.sender}님의 메시지`, notifyText);
                     }
@@ -1318,8 +1396,7 @@
           snapshot.docChanges().forEach((change) => {
             if (change.type === "added" && !isFirstCardLoad) {
                 const newCard = change.doc.data();
-                // 내 탭이 비활성화(document.hidden) 상태이고 내가 등록한 카드가 아닐 때만 알림 발생
-                if (document.hidden && newCard.assignee !== myName) {
+                if (isUserAway() && newCard.assignee !== myName) {
                     triggerDesktopNotification("📌 새 업무 카드 추가됨", `${newCard.assignee || '누군가'}: ${newCard.title}`);
                 }
             }
