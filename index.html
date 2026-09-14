@@ -382,35 +382,6 @@
             flex-direction: row-reverse;
         }
 
-        .msg-action-btns {
-            display: none;
-            gap: 4px;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 2px 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-        }
-
-        .msg-wrapper:hover .msg-action-btns {
-            display: flex;
-        }
-
-        .action-icon-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 12px;
-            padding: 2px 4px;
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-
-        .action-icon-btn:hover {
-            background: #E2E8F0;
-        }
-
         .msg-info-column {
             display: flex;
             flex-direction: column;
@@ -444,6 +415,8 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
             word-break: break-all;
+            cursor: context-menu; /* 우클릭 시 메뉴가 떠오름을 시각적으로 표시 */
+            user-select: text;
         }
 
         .msg-wrapper.my-msg-wrapper .message {
@@ -452,6 +425,43 @@
             border: none;
             border-radius: 12px;
             border-top-right-radius: 2px;
+        }
+
+        /* 우클릭 커스텀 메뉴 스타일 */
+        .chat-context-menu {
+            display: none;
+            position: fixed;
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            width: 120px;
+            padding: 4px 0;
+        }
+
+        .chat-context-menu.active {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 8px 12px;
+            font-size: 13px;
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s;
+        }
+
+        .context-menu-item:hover {
+            background-color: #F1F5F9;
+            color: var(--lg-red);
+        }
+
+        .context-menu-item.danger:hover {
+            color: #EF4444;
         }
 
         /* 인용 답장 박스 스타일 */
@@ -852,6 +862,13 @@
         </aside>
     </div>
 
+    <!-- 우클릭 컨텍스트 메뉴 element -->
+    <div class="chat-context-menu" id="chat-context-menu">
+        <div class="context-menu-item" id="ctx-reply">↩️ 답장 (인용)</div>
+        <div class="context-menu-item" id="ctx-edit">✏️ 수정</div>
+        <div class="context-menu-item danger" id="ctx-delete">🗑️ 삭제</div>
+    </div>
+
     <!-- 카드 상세 모달 -->
     <div class="modal-overlay" id="card-modal">
         <div class="modal">
@@ -943,8 +960,9 @@
         let onlineUsersList = [];
         let chatUnsubscribe = null;
 
-        // 답장 상태 변수
-        let activeReplyTarget = null; 
+        // 답장 및 컨텍스트 선택 대상 변수
+        let activeReplyTarget = null;
+        let contextTargetMsg = null;
 
         const authModal = document.getElementById('auth-modal');
         const authNameInput = document.getElementById('auth-name-input');
@@ -1217,7 +1235,42 @@
             chatInput.focus();
         };
 
+        /* ---------------- 컨텍스트 메뉴 및 이벤트 핸들러 ---------------- */
+
+        const contextMenu = document.getElementById('chat-context-menu');
+        const ctxReply = document.getElementById('ctx-reply');
+        const ctxEdit = document.getElementById('ctx-edit');
+        const ctxDelete = document.getElementById('ctx-delete');
+
+        function hideContextMenu() {
+            contextMenu.classList.remove('active');
+            contextTargetMsg = null;
+        }
+
+        ctxReply.addEventListener('click', () => {
+            if (contextTargetMsg) {
+                setReplyTarget(contextTargetMsg.sender, contextTargetMsg.text);
+            }
+            hideContextMenu();
+        });
+
+        ctxEdit.addEventListener('click', () => {
+            if (contextTargetMsg && contextTargetMsg.isMe) {
+                editMessage(contextTargetMsg.id, contextTargetMsg.text);
+            }
+            hideContextMenu();
+        });
+
+        ctxDelete.addEventListener('click', () => {
+            if (contextTargetMsg && contextTargetMsg.isMe) {
+                deleteMessage(contextTargetMsg.id);
+            }
+            hideContextMenu();
+        });
+
         document.addEventListener('click', (e) => {
+            hideContextMenu();
+
             const emojiPicker = document.getElementById('emoji-picker');
             if (emojiPicker && emojiPicker.classList.contains('active') && !emojiPicker.contains(e.target)) {
                 emojiPicker.classList.remove('active');
@@ -1232,6 +1285,14 @@
                 mentionDropdown.classList.remove('active');
             }
         });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideContextMenu();
+            }
+        });
+
+        /* ---------------------------------------------------------------------- */
 
         function formatMessageText(text) {
             if (!text) return "";
@@ -1257,8 +1318,6 @@
             return `${ampm} ${hours}:${minutes}`;
         }
 
-        /* ------------------ 메시지 답장/수정/삭제 헬퍼 함수 ------------------ */
-
         window.setReplyTarget = function(sender, text) {
             activeReplyTarget = { sender, text };
             const previewBar = document.getElementById('reply-preview-bar');
@@ -1273,7 +1332,7 @@
             document.getElementById('reply-preview-bar').classList.remove('active');
         };
 
-        window.deleteMessage = async function(msgId) {
+        async function deleteMessage(msgId) {
             if (confirm("이 메시지를 삭제하시겠습니까?")) {
                 try {
                     await deleteDoc(doc(db, "messages", msgId));
@@ -1281,9 +1340,9 @@
                     alert("삭제 실패: " + e.message);
                 }
             }
-        };
+        }
 
-        window.editMessage = async function(msgId, currentText) {
+        async function editMessage(msgId, currentText) {
             const newText = prompt("메시지를 수정하세요:", currentText);
             if (newText !== null && newText.trim() !== "" && newText !== currentText) {
                 try {
@@ -1295,9 +1354,7 @@
                     alert("수정 실패: " + e.message);
                 }
             }
-        };
-
-        /* ---------------------------------------------------------------------- */
+        }
 
         const sendBtn = document.getElementById('send-btn');
         const chatMessages = document.getElementById('chat-messages');
@@ -1457,26 +1514,9 @@
                 const messageClass = isMentioned ? "message mentioned-message" : "message";
                 const editedHTML = data.isEdited ? `<span class="edited-tag">(수정됨)</span>` : '';
 
-                // 답장, 수정, 삭제 액션 버튼 렌더링
-                const safeText = (data.text || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                const safeSender = (data.sender || "").replace(/'/g, "\\'");
-
-                let actionBtnsHTML = `
-                    <div class="msg-action-btns">
-                        <button class="action-icon-btn" onclick="setReplyTarget('${safeSender}', '${safeText}')" title="답장">↩️</button>
-                `;
-                if (isMe) {
-                    actionBtnsHTML += `
-                        <button class="action-icon-btn" onclick="editMessage('${msgId}', '${safeText}')" title="수정">✏️</button>
-                        <button class="action-icon-btn" onclick="deleteMessage('${msgId}')" title="삭제">🗑️</button>
-                    `;
-                }
-                actionBtnsHTML += `</div>`;
-
                 msgWrapper.innerHTML = `
                     ${senderHTML}
                     <div class="msg-content-row">
-                        ${actionBtnsHTML}
                         <div class="${messageClass}">
                             ${quoteHTML}
                             ${contentHTML}
@@ -1489,6 +1529,34 @@
                         </div>
                     </div>
                 `;
+
+                // 우클릭 이벤트 리스너 바인딩
+                const msgBubble = msgWrapper.querySelector('.message');
+                msgBubble.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    contextTargetMsg = {
+                        id: msgId,
+                        text: data.text || "",
+                        sender: data.sender,
+                        isMe: isMe
+                    };
+
+                    // 메뉴 항목 표시 권한 제어
+                    if (isMe) {
+                        ctxEdit.style.display = 'flex';
+                        ctxDelete.style.display = 'flex';
+                    } else {
+                        ctxEdit.style.display = 'none';
+                        ctxDelete.style.display = 'none';
+                    }
+
+                    // 클릭한 위치에 메뉴 띄우기
+                    contextMenu.style.top = `${e.clientY}px`;
+                    contextMenu.style.left = `${e.clientX}px`;
+                    contextMenu.classList.add('active');
+                });
 
                 chatMessages.appendChild(msgWrapper);
               });
