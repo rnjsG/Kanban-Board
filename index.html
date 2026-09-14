@@ -795,7 +795,6 @@
         const authPinInput = document.getElementById('auth-pin-input');
         const usernameInput = document.getElementById('username-input');
 
-        // 엔터 키 이벤트 등록
         [authNameInput, authPinInput].forEach(input => {
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
@@ -805,7 +804,6 @@
             });
         });
 
-        // 자동 로그인 시도
         async function autoLogin() {
             if (myName && myPin) {
                 const userRef = doc(db, "users", myName);
@@ -826,7 +824,6 @@
 
         autoLogin();
 
-        // 로그인 / 가입 로직
         window.handleAuthSubmit = async function() {
             const inputName = authNameInput.value.trim();
             const inputPin = authPinInput.value.trim();
@@ -872,7 +869,6 @@
             startChatListener();
         };
 
-        // 로그아웃 로직
         window.handleLogout = function() {
             if (confirm("로그아웃 하시겠습니까?")) {
                 removePresenceBeacon();
@@ -888,7 +884,6 @@
             authModal.style.display = "flex";
         };
 
-        // 접속 상태 갱신
         async function updatePresence() {
             if (!myName) return;
             const userPresenceRef = doc(db, "presence", myUserId);
@@ -912,7 +907,6 @@
         window.addEventListener('pagehide', removePresenceBeacon);
         window.addEventListener('beforeunload', removePresenceBeacon);
 
-        // 접속자 목록 수신
         onSnapshot(collection(db, "presence"), (snapshot) => {
             const now = Date.now();
             const activeUsers = [];
@@ -942,42 +936,10 @@
             document.getElementById('online-users-popover').classList.toggle('active');
         };
 
-        // 데스크톱 알림 권한 요청
-        window.requestNotificationPermission = function() {
-            if (!("Notification" in window)) {
-                alert("이 브라우저는 데스크톱 알림을 지원하지 않습니다.");
-                return;
-            }
-
-            if (Notification.permission === "denied") {
-                alert("브라우저 설정에서 알림을 허용해주세요.");
-                return;
-            }
-
-            Notification.requestPermission().then((permission) => {
-                const btn = document.getElementById('noti-toggle-btn');
-                if (permission === "granted") {
-                    btn.innerText = "🔔 알림 켜짐";
-                    btn.style.color = "#22C55E";
-                } else {
-                    btn.innerText = "🔕 알림 차단됨";
-                    btn.style.color = "#EF4444";
-                }
-            });
-        };
-
-        if ("Notification" in window && Notification.permission === "granted") {
-            const btn = document.getElementById('noti-toggle-btn');
-            if (btn) {
-                btn.innerText = "🔔 알림 켜짐";
-                btn.style.color = "#22C55E";
-            }
-        }
-
-        // 데스크톱 알림 팝업 트리거
+        // 수정된 데스크톱 알림 발송 함수 (조건 완화)
         function triggerDesktopNotification(title, body) {
             try {
-                if (document.hidden && "Notification" in window && Notification.permission === "granted") {
+                if ("Notification" in window && Notification.permission === "granted") {
                     const instance = new Notification(title, {
                         body: body,
                         icon: 'https://www.lgchem.com/favicon.ico'
@@ -986,10 +948,43 @@
                         window.focus();
                         instance.close();
                     };
-                    setTimeout(() => instance.close(), 4000);
+                    setTimeout(() => instance.close(), 5000);
                 }
             } catch (e) {
-                console.log("알림 오류:", e);
+                console.log("알림 출력 제한:", e);
+            }
+        }
+
+        // 수정된 알림 권한 설정 및 테스트 발송 함수
+        window.requestNotificationPermission = function() {
+            if (!("Notification" in window)) {
+                alert("이 브라우저는 데스크톱 알림을 지원하지 않습니다.");
+                return;
+            }
+
+            Notification.requestPermission().then((permission) => {
+                const btn = document.getElementById('noti-toggle-btn');
+                if (permission === "granted") {
+                    btn.innerText = "🔔 알림 켜짐";
+                    btn.style.color = "#22C55E";
+                    triggerDesktopNotification("알림 테스트", "데스크톱 알림이 정상적으로 활성화되었습니다!");
+                } else if (permission === "denied") {
+                    btn.innerText = "🔕 알림 차단됨";
+                    btn.style.color = "#EF4444";
+                    alert("주소창 좌측의 '🔒 사이트 설정'에서 알림 권한을 '허용'으로 변경해주세요.");
+                }
+            });
+        };
+
+        // 초기 알림 상태 체크
+        if ("Notification" in window) {
+            const btn = document.getElementById('noti-toggle-btn');
+            if (Notification.permission === "granted") {
+                btn.innerText = "🔔 알림 켜짐";
+                btn.style.color = "#22C55E";
+            } else if (Notification.permission === "denied") {
+                btn.innerText = "🔕 알림 차단됨";
+                btn.style.color = "#EF4444";
             }
         }
 
