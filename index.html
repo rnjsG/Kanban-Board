@@ -936,7 +936,7 @@
             document.getElementById('online-users-popover').classList.toggle('active');
         };
 
-        // 수정된 데스크톱 알림 발송 함수 (조건 완화)
+        // 데스크톱 알림 발송 함수
         function triggerDesktopNotification(title, body) {
             try {
                 if ("Notification" in window && Notification.permission === "granted") {
@@ -955,7 +955,7 @@
             }
         }
 
-        // 수정된 알림 권한 설정 및 테스트 발송 함수
+        // 알림 권한 설정 및 테스트 발송 함수
         window.requestNotificationPermission = function() {
             if (!("Notification" in window)) {
                 alert("이 브라우저는 데스크톱 알림을 지원하지 않습니다.");
@@ -967,7 +967,7 @@
                 if (permission === "granted") {
                     btn.innerText = "🔔 알림 켜짐";
                     btn.style.color = "#22C55E";
-                    triggerDesktopNotification("알림 테스트", "데스크톱 알림이 정상적으로 활성화되었습니다!");
+                    triggerDesktopNotification("알림 테스트", "데스크톱 알림 권한이 허용되었습니다! (다른 탭으로 나가 있을 때만 작동합니다)");
                 } else if (permission === "denied") {
                     btn.innerText = "🔕 알림 차단됨";
                     btn.style.color = "#EF4444";
@@ -1114,7 +1114,8 @@
               snapshot.docChanges().forEach((change) => {
                 if (change.type === "added" && !isFirstChatLoad) {
                     const newMsg = change.doc.data();
-                    if (newMsg.sender !== myName) {
+                    // 내 탭이 비활성화(document.hidden) 상태이고 내가 보낸 메시지가 아닐 때만 알림 발생
+                    if (document.hidden && newMsg.sender !== myName) {
                         const notifyText = newMsg.text || (newMsg.fileName ? `[파일 첨부] ${newMsg.fileName}` : "새 메시지가 도착했습니다.");
                         triggerDesktopNotification(`💬 ${newMsg.sender}님의 메시지`, notifyText);
                     }
@@ -1317,7 +1318,8 @@
           snapshot.docChanges().forEach((change) => {
             if (change.type === "added" && !isFirstCardLoad) {
                 const newCard = change.doc.data();
-                if (newCard.assignee !== myName) {
+                // 내 탭이 비활성화(document.hidden) 상태이고 내가 등록한 카드가 아닐 때만 알림 발생
+                if (document.hidden && newCard.assignee !== myName) {
                     triggerDesktopNotification("📌 새 업무 카드 추가됨", `${newCard.assignee || '누군가'}: ${newCard.title}`);
                 }
             }
