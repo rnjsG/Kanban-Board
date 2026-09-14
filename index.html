@@ -219,7 +219,7 @@
         }
 
         .chat-container {
-            width: 380px;
+            width: 400px;
             background-color: var(--header-bg);
             border-left: 1px solid var(--border-color);
             display: flex;
@@ -356,6 +356,7 @@
             flex-direction: column;
             align-items: flex-start;
             max-width: 85%;
+            position: relative;
         }
 
         .msg-wrapper.my-msg-wrapper {
@@ -374,10 +375,40 @@
             display: flex;
             align-items: flex-end;
             gap: 6px;
+            position: relative;
         }
 
         .msg-wrapper.my-msg-wrapper .msg-content-row {
             flex-direction: row-reverse;
+        }
+
+        .msg-action-btns {
+            display: none;
+            gap: 4px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2px 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        }
+
+        .msg-wrapper:hover .msg-action-btns {
+            display: flex;
+        }
+
+        .action-icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .action-icon-btn:hover {
+            background: #E2E8F0;
         }
 
         .msg-info-column {
@@ -423,7 +454,36 @@
             border-top-right-radius: 2px;
         }
 
-        /* 멘션 강조 스타일 */
+        /* 인용 답장 박스 스타일 */
+        .reply-quote-box {
+            background-color: rgba(0, 0, 0, 0.05);
+            border-left: 3px solid var(--lg-red);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-bottom: 6px;
+            color: #475569;
+            word-break: break-all;
+        }
+
+        .msg-wrapper.my-msg-wrapper .reply-quote-box {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left-color: #FFFFFF;
+            color: #FFF;
+        }
+
+        .reply-sender-label {
+            font-weight: 700;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .edited-tag {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-left: 4px;
+        }
+
         .message.mentioned-message {
             background-color: #FEF3C7 !important;
             border: 1.5px solid #F59E0B !important;
@@ -486,6 +546,31 @@
             position: relative;
         }
 
+        /* 답장 프리뷰 헤더 */
+        .reply-preview-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            background: #F1F5F9;
+            border-left: 3px solid var(--lg-red);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #334155;
+        }
+
+        .reply-preview-bar.active {
+            display: flex;
+        }
+
+        .reply-cancel-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #64748B;
+            font-weight: 700;
+        }
+
         .chat-tools-row {
             display: flex;
             align-items: center;
@@ -539,7 +624,6 @@
             width: fit-content;
         }
 
-        /* 멘션 자동완성 드롭다운 메뉴 */
         .mention-dropdown {
             display: none;
             position: absolute;
@@ -644,40 +728,12 @@
             gap: 16px;
         }
 
-        .modal h2 {
-            font-size: 18px;
-            color: var(--text-main);
-            font-weight: 700;
-        }
+        .modal h2 { font-size: 18px; color: var(--text-main); font-weight: 700; }
+        .modal label { font-size: 13px; font-weight: 600; color: #475569; display: flex; flex-direction: column; gap: 6px; }
+        .modal input, .modal textarea { padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; }
+        .modal input:focus, .modal textarea:focus { border-color: var(--lg-red); }
 
-        .modal label {
-            font-size: 13px;
-            font-weight: 600;
-            color: #475569;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .modal input, .modal textarea {
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 14px;
-            outline: none;
-        }
-
-        .modal input:focus, .modal textarea:focus {
-            border-color: var(--lg-red);
-        }
-
-        .modal-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
         .btn-save { background-color: var(--lg-red); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
         .btn-save:hover { background-color: var(--lg-red-hover); }
         .btn-delete { background-color: #EF4444; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
@@ -738,7 +794,14 @@
             <div class="chat-messages" id="chat-messages">
                 <div class="message"><strong>알림:</strong> 로그인 대기 중...</div>
             </div>
+            
             <div class="chat-input-area">
+                <!-- 답장 모드 프리뷰 바 -->
+                <div class="reply-preview-bar" id="reply-preview-bar">
+                    <span id="reply-preview-text">~님에게 답장 중</span>
+                    <button class="reply-cancel-btn" onclick="cancelReplyMode()">✕</button>
+                </div>
+
                 <div class="emoji-picker-box" id="emoji-picker">
                     <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
                     <button type="button" class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
@@ -781,7 +844,6 @@
                 </div>
 
                 <div class="chat-input-row">
-                    <!-- 멘션 자동완성 드롭다운 -->
                     <ul class="mention-dropdown" id="mention-dropdown"></ul>
                     <input type="text" id="chat-input" placeholder="메시지 입력... (@로 멘션 가능)" autocomplete="off">
                     <button id="send-btn">전송</button>
@@ -880,6 +942,9 @@
         let totalOnlineCount = 1;
         let onlineUsersList = [];
         let chatUnsubscribe = null;
+
+        // 답장 상태 변수
+        let activeReplyTarget = null; 
 
         const authModal = document.getElementById('auth-modal');
         const authNameInput = document.getElementById('auth-name-input');
@@ -994,7 +1059,6 @@
         }
 
         setInterval(updatePresence, 10000);
-
         window.addEventListener('pagehide', removePresenceBeacon);
         window.addEventListener('beforeunload', removePresenceBeacon);
 
@@ -1027,14 +1091,11 @@
             document.getElementById('online-users-popover').classList.toggle('active');
         };
 
-        /* 정확한 화면/탭 집중 상태 체킹 */
         function isUserAway() {
             return document.hidden || !document.hasFocus();
         }
 
-        /* 데스크톱 알림 발송 로직 (isForceMention 옵션 추가) */
         function triggerDesktopNotification(title, body, isForceMention = false) {
-            // 알림 끄기가 적용된 경우 태그(멘션) 알림이 아닌 이상 모두 차단
             if (isNotificationMuted && !isForceMention) return; 
 
             try {
@@ -1108,7 +1169,6 @@
 
         updateNotiButtonUI();
 
-        /* 이모티콘 피커 관련 함수 */
         window.toggleEmojiPicker = function(event) {
             event.stopPropagation();
             document.getElementById('emoji-picker').classList.toggle('active');
@@ -1121,7 +1181,6 @@
             document.getElementById('emoji-picker').classList.remove('active');
         };
 
-        /* 멘션 자동완성 UI 제어 */
         const chatInput = document.getElementById('chat-input');
         const mentionDropdown = document.getElementById('mention-dropdown');
 
@@ -1174,7 +1233,6 @@
             }
         });
 
-        /* 링크 변환 및 @태그 하이라이팅 처리 */
         function formatMessageText(text) {
             if (!text) return "";
             const urlRegex = /(https?:\/\/[^\s<]+)/g;
@@ -1198,6 +1256,48 @@
             hours = hours ? hours : 12;
             return `${ampm} ${hours}:${minutes}`;
         }
+
+        /* ------------------ 메시지 답장/수정/삭제 헬퍼 함수 ------------------ */
+
+        window.setReplyTarget = function(sender, text) {
+            activeReplyTarget = { sender, text };
+            const previewBar = document.getElementById('reply-preview-bar');
+            const previewText = document.getElementById('reply-preview-text');
+            previewText.innerText = `💬 ${sender}님에게 답장: "${text.substring(0, 20)}${text.length > 20 ? '...' : ''}"`;
+            previewBar.classList.add('active');
+            chatInput.focus();
+        };
+
+        window.cancelReplyMode = function() {
+            activeReplyTarget = null;
+            document.getElementById('reply-preview-bar').classList.remove('active');
+        };
+
+        window.deleteMessage = async function(msgId) {
+            if (confirm("이 메시지를 삭제하시겠습니까?")) {
+                try {
+                    await deleteDoc(doc(db, "messages", msgId));
+                } catch (e) {
+                    alert("삭제 실패: " + e.message);
+                }
+            }
+        };
+
+        window.editMessage = async function(msgId, currentText) {
+            const newText = prompt("메시지를 수정하세요:", currentText);
+            if (newText !== null && newText.trim() !== "" && newText !== currentText) {
+                try {
+                    await updateDoc(doc(db, "messages", msgId), {
+                        text: newText.trim(),
+                        isEdited: true
+                    });
+                } catch (e) {
+                    alert("수정 실패: " + e.message);
+                }
+            }
+        };
+
+        /* ---------------------------------------------------------------------- */
 
         const sendBtn = document.getElementById('send-btn');
         const chatMessages = document.getElementById('chat-messages');
@@ -1223,6 +1323,11 @@
               targetTotal: totalOnlineCount,
               createdAt: serverTimestamp()
             };
+
+            if (activeReplyTarget) {
+                msgData.replyTo = activeReplyTarget;
+                cancelReplyMode();
+            }
 
             if (filePayload) {
               msgData.fileData = filePayload.data;
@@ -1294,10 +1399,8 @@
 
                     if (newMsg.sender !== myName) {
                         if (isMentioned) {
-                            // 멘션 알림: 알림 끄기 설정 및 현재 창 활성화 상태와 무관하게 팝업 강제 알림
                             triggerDesktopNotification(`📣 ${newMsg.sender}님이 나를 언급했습니다!`, newMsg.text, true);
                         } else if (isUserAway()) {
-                            // 일반 메시지: 사용자가 현재 탭을 떠나있고, '알림 끄기'가 아닌 경우만 발송
                             const notifyText = newMsg.text || (newMsg.fileName ? `[파일 첨부] ${newMsg.fileName}` : "새 메시지가 도착했습니다.");
                             triggerDesktopNotification(`💬 ${newMsg.sender}님의 메시지`, notifyText, false);
                         }
@@ -1339,14 +1442,45 @@
                     }
                 }
 
+                // 인용 답장 표현
+                let quoteHTML = '';
+                if (data.replyTo) {
+                    quoteHTML = `
+                        <div class="reply-quote-box">
+                            <span class="reply-sender-label">↩️ ${data.replyTo.sender}님에게 답장</span>
+                            ${formatMessageText(data.replyTo.text)}
+                        </div>
+                    `;
+                }
+
                 const contentHTML = formatMessageText(data.text || "");
                 const messageClass = isMentioned ? "message mentioned-message" : "message";
+                const editedHTML = data.isEdited ? `<span class="edited-tag">(수정됨)</span>` : '';
+
+                // 답장, 수정, 삭제 액션 버튼 렌더링
+                const safeText = (data.text || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                const safeSender = (data.sender || "").replace(/'/g, "\\'");
+
+                let actionBtnsHTML = `
+                    <div class="msg-action-btns">
+                        <button class="action-icon-btn" onclick="setReplyTarget('${safeSender}', '${safeText}')" title="답장">↩️</button>
+                `;
+                if (isMe) {
+                    actionBtnsHTML += `
+                        <button class="action-icon-btn" onclick="editMessage('${msgId}', '${safeText}')" title="수정">✏️</button>
+                        <button class="action-icon-btn" onclick="deleteMessage('${msgId}')" title="삭제">🗑️</button>
+                    `;
+                }
+                actionBtnsHTML += `</div>`;
 
                 msgWrapper.innerHTML = `
                     ${senderHTML}
                     <div class="msg-content-row">
+                        ${actionBtnsHTML}
                         <div class="${messageClass}">
+                            ${quoteHTML}
                             ${contentHTML}
+                            ${editedHTML}
                             ${fileHTML}
                         </div>
                         <div class="msg-info-column">
@@ -1503,7 +1637,6 @@
           snapshot.docChanges().forEach((change) => {
             if (change.type === "added" && !isFirstCardLoad) {
                 const newCard = change.doc.data();
-                // 사용자가 화면을 비우고 있고 알림이 켜진 경우에만 카놀라 알림 발송
                 if (isUserAway() && newCard.assignee !== myName) {
                     triggerDesktopNotification("📌 새 업무 카드 추가됨", `${newCard.assignee || '누군가'}: ${newCard.title}`, false);
                 }
