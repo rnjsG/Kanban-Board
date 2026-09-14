@@ -423,6 +423,26 @@
             border-top-right-radius: 2px;
         }
 
+        /* 멘션 강조 스타일 */
+        .message.mentioned-message {
+            background-color: #FEF3C7 !important;
+            border: 1.5px solid #F59E0B !important;
+            color: #92400E !important;
+        }
+
+        .mention-tag {
+            background: rgba(37, 99, 235, 0.1);
+            color: #2563EB;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+
+        .msg-wrapper.my-msg-wrapper .mention-tag {
+            background: rgba(255, 255, 255, 0.3);
+            color: #FFFFFF;
+        }
+
         .message a, .card-title a, .card-desc a {
             color: #2563EB;
             text-decoration: underline;
@@ -475,6 +495,7 @@
         .chat-input-row {
             display: flex;
             gap: 8px;
+            position: relative;
         }
 
         .chat-input-area input[type="text"] {
@@ -518,7 +539,44 @@
             width: fit-content;
         }
 
-        /* 이모티콘 피커 레이아웃 보완 */
+        /* 멘션 자동완성 드롭다운 메뉴 */
+        .mention-dropdown {
+            display: none;
+            position: absolute;
+            bottom: 105%;
+            left: 0;
+            width: 200px;
+            max-height: 160px;
+            overflow-y: auto;
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 70;
+            list-style: none;
+            padding: 4px 0;
+        }
+
+        .mention-dropdown.active {
+            display: block;
+        }
+
+        .mention-dropdown-item {
+            padding: 8px 12px;
+            font-size: 13px;
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mention-dropdown-item:hover, .mention-dropdown-item.selected {
+            background-color: #F1F5F9;
+            color: var(--lg-red);
+            font-weight: 600;
+        }
+
         .emoji-picker-box {
             display: none;
             position: absolute;
@@ -681,7 +739,6 @@
                 <div class="message"><strong>알림:</strong> 로그인 대기 중...</div>
             </div>
             <div class="chat-input-area">
-                <!-- 확충된 이모티콘 목록 -->
                 <div class="emoji-picker-box" id="emoji-picker">
                     <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
                     <button type="button" class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
@@ -712,25 +769,9 @@
                     <button type="button" class="emoji-btn" onclick="insertEmoji('💖')">💖</button>
                     <button type="button" class="emoji-btn" onclick="insertEmoji('🙋‍♂️')">🙋‍♂️</button>
                     <button type="button" class="emoji-btn" onclick="insertEmoji('🙋‍♀️')">🙋‍♀️</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('️⚠️')">⚠️</button>
+                    <button type="button" class="emoji-btn" onclick="insertEmoji('⚠️')">⚠️</button>
                     <button type="button" class="emoji-btn" onclick="insertEmoji('❓')">❓</button>
                     <button type="button" class="emoji-btn" onclick="insertEmoji('❗')">❗</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('☕')">☕</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🍕')">🍕</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🎁')">🎁</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('⏰')">⏰</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('📢')">📢</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🎯')">🎯</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🏆')">🏆</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🍀')">🍀</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('😴')">😴</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🤯')">🤯</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('😱')">😱</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('💩')">💩</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('👎')">👎</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('👊')">👊</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('✌️')">✌️</button>
                 </div>
 
                 <div class="chat-tools-row">
@@ -738,8 +779,11 @@
                     <button type="button" class="attach-btn" onclick="document.getElementById('chat-file-input').click()">📁 첨부</button>
                     <button type="button" class="emoji-toggle-btn" onclick="toggleEmojiPicker(event)">😊 이모티콘</button>
                 </div>
+
                 <div class="chat-input-row">
-                    <input type="text" id="chat-input" placeholder="메시지 입력...">
+                    <!-- 멘션 자동완성 드롭다운 -->
+                    <ul class="mention-dropdown" id="mention-dropdown"></ul>
+                    <input type="text" id="chat-input" placeholder="메시지 입력... (@로 멘션 가능)" autocomplete="off">
                     <button id="send-btn">전송</button>
                 </div>
             </div>
@@ -831,7 +875,7 @@
 
         let myName = localStorage.getItem('kanban_username') || "";
         let myPin = localStorage.getItem('kanban_pin') || "";
-        let isNotificationMuted = localStorage.getItem('kanban_noti_muted') === 'true'; // 알림 끄기 설정 관리
+        let isNotificationMuted = localStorage.getItem('kanban_noti_muted') === 'true';
         let myJoinTimestamp = null;
         let totalOnlineCount = 1;
         let onlineUsersList = [];
@@ -983,13 +1027,15 @@
             document.getElementById('online-users-popover').classList.toggle('active');
         };
 
+        /* 정확한 화면/탭 집중 상태 체킹 */
         function isUserAway() {
             return document.hidden || !document.hasFocus();
         }
 
-        // 알림 발송 함수 (사용자가 알림을 껐거나 화면에 집중해 있으면 발송 안 함)
-        function triggerDesktopNotification(title, body) {
-            if (isNotificationMuted) return; // 알림 끄기 설정된 경우 동작 안함
+        /* 데스크톱 알림 발송 로직 (isForceMention 옵션 추가) */
+        function triggerDesktopNotification(title, body, isForceMention = false) {
+            // 알림 끄기가 적용된 경우 태그(멘션) 알림이 아닌 이상 모두 차단
+            if (isNotificationMuted && !isForceMention) return; 
 
             try {
                 if ("Notification" in window && Notification.permission === "granted") {
@@ -1001,14 +1047,13 @@
                         window.focus();
                         instance.close();
                     };
-                    setTimeout(() => instance.close(), 5000);
+                    setTimeout(() => instance.close(), 6000);
                 }
             } catch (e) {
                 console.log("알림 출력 제한:", e);
             }
         }
 
-        // 알림 UI 업데이트 함수
         function updateNotiButtonUI() {
             const btn = document.getElementById('noti-toggle-btn');
             if (!("Notification" in window)) {
@@ -1033,7 +1078,6 @@
             }
         }
 
-        // 알림 설정 토글 함수 (켜기 / 끄기 / 권한 요청)
         window.toggleNotificationSetting = function() {
             if (!("Notification" in window)) {
                 alert("이 브라우저는 데스크톱 알림을 지원하지 않습니다.");
@@ -1041,7 +1085,6 @@
             }
 
             if (Notification.permission === "granted") {
-                // 이미 권한이 있을 경우 ON/OFF 토글
                 isNotificationMuted = !isNotificationMuted;
                 localStorage.setItem('kanban_noti_muted', isNotificationMuted);
                 updateNotiButtonUI();
@@ -1052,7 +1095,6 @@
             } else if (Notification.permission === "denied") {
                 alert("주소창 좌측의 '🔒 사이트 설정'에서 알림 권한을 '허용'으로 변경해주세요.");
             } else {
-                // 권한 요청
                 Notification.requestPermission().then((permission) => {
                     if (permission === "granted") {
                         isNotificationMuted = false;
@@ -1064,9 +1106,9 @@
             }
         };
 
-        // 초기 알림 버튼 상태 설정
         updateNotiButtonUI();
 
+        /* 이모티콘 피커 관련 함수 */
         window.toggleEmojiPicker = function(event) {
             event.stopPropagation();
             document.getElementById('emoji-picker').classList.toggle('active');
@@ -1079,6 +1121,43 @@
             document.getElementById('emoji-picker').classList.remove('active');
         };
 
+        /* 멘션 자동완성 UI 제어 */
+        const chatInput = document.getElementById('chat-input');
+        const mentionDropdown = document.getElementById('mention-dropdown');
+
+        chatInput.addEventListener('input', (e) => {
+            const value = chatInput.value;
+            const cursorPosition = chatInput.selectionStart;
+            const textBeforeCursor = value.substring(0, cursorPosition);
+            const mentionMatch = textBeforeCursor.match(/@([^\s]*)$/);
+
+            if (mentionMatch) {
+                const queryStr = mentionMatch[1].toLowerCase();
+                const filteredUsers = onlineUsersList.filter(name => name !== myName && name.toLowerCase().includes(queryStr));
+                
+                if (filteredUsers.length > 0) {
+                    mentionDropdown.innerHTML = filteredUsers.map(name => `<li class="mention-dropdown-item" onclick="selectMention('${name}')">@${name}</li>`).join('');
+                    mentionDropdown.classList.add('active');
+                } else {
+                    mentionDropdown.classList.remove('active');
+                }
+            } else {
+                mentionDropdown.classList.remove('active');
+            }
+        });
+
+        window.selectMention = function(name) {
+            const value = chatInput.value;
+            const cursorPosition = chatInput.selectionStart;
+            const textBeforeCursor = value.substring(0, cursorPosition);
+            const textAfterCursor = value.substring(cursorPosition);
+            
+            const newTextBefore = textBeforeCursor.replace(/@([^\s]*)$/, `@${name} `);
+            chatInput.value = newTextBefore + textAfterCursor;
+            mentionDropdown.classList.remove('active');
+            chatInput.focus();
+        };
+
         document.addEventListener('click', (e) => {
             const emojiPicker = document.getElementById('emoji-picker');
             if (emojiPicker && emojiPicker.classList.contains('active') && !emojiPicker.contains(e.target)) {
@@ -1089,14 +1168,24 @@
             if (usersPopover && usersPopover.classList.contains('active') && !usersPopover.contains(e.target)) {
                 usersPopover.classList.remove('active');
             }
+
+            if (mentionDropdown && !mentionDropdown.contains(e.target) && e.target !== chatInput) {
+                mentionDropdown.classList.remove('active');
+            }
         });
 
-        function autoLink(text) {
+        /* 링크 변환 및 @태그 하이라이팅 처리 */
+        function formatMessageText(text) {
             if (!text) return "";
             const urlRegex = /(https?:\/\/[^\s<]+)/g;
-            return text.replace(urlRegex, (url) => {
+            let formatted = text.replace(urlRegex, (url) => {
                 return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
             });
+            
+            const mentionRegex = /@([^\s]+)/g;
+            formatted = formatted.replace(mentionRegex, `<span class="mention-tag">@$1</span>`);
+
+            return formatted;
         }
 
         function formatTime(timestamp) {
@@ -1110,7 +1199,6 @@
             return `${ampm} ${hours}:${minutes}`;
         }
 
-        const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
         const chatMessages = document.getElementById('chat-messages');
 
@@ -1124,6 +1212,7 @@
           if (text === "" && !filePayload) return;
 
           chatInput.value = "";
+          mentionDropdown.classList.remove('active');
           document.getElementById('emoji-picker').classList.remove('active');
 
           try {
@@ -1150,6 +1239,14 @@
         sendBtn.addEventListener('click', () => sendMessage());
         chatInput.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' && !e.isComposing) {
+            if (mentionDropdown.classList.contains('active')) {
+                const firstItem = mentionDropdown.querySelector('.mention-dropdown-item');
+                if (firstItem) {
+                    firstItem.click();
+                    e.preventDefault();
+                    return;
+                }
+            }
             e.preventDefault();
             sendMessage();
           }
@@ -1193,9 +1290,17 @@
               snapshot.docChanges().forEach((change) => {
                 if (change.type === "added" && !isFirstChatLoad) {
                     const newMsg = change.doc.data();
-                    if (isUserAway() && newMsg.sender !== myName) {
-                        const notifyText = newMsg.text || (newMsg.fileName ? `[파일 첨부] ${newMsg.fileName}` : "새 메시지가 도착했습니다.");
-                        triggerDesktopNotification(`💬 ${newMsg.sender}님의 메시지`, notifyText);
+                    const isMentioned = newMsg.text && newMsg.text.includes(`@${myName}`);
+
+                    if (newMsg.sender !== myName) {
+                        if (isMentioned) {
+                            // 멘션 알림: 알림 끄기 설정 및 현재 창 활성화 상태와 무관하게 팝업 강제 알림
+                            triggerDesktopNotification(`📣 ${newMsg.sender}님이 나를 언급했습니다!`, newMsg.text, true);
+                        } else if (isUserAway()) {
+                            // 일반 메시지: 사용자가 현재 탭을 떠나있고, '알림 끄기'가 아닌 경우만 발송
+                            const notifyText = newMsg.text || (newMsg.fileName ? `[파일 첨부] ${newMsg.fileName}` : "새 메시지가 도착했습니다.");
+                            triggerDesktopNotification(`💬 ${newMsg.sender}님의 메시지`, notifyText, false);
+                        }
                     }
                 }
               });
@@ -1213,6 +1318,7 @@
 
                 const msgWrapper = document.createElement('div');
                 const isMe = data.sender === myName;
+                const isMentioned = data.text && data.text.includes(`@${myName}`);
                 
                 msgWrapper.className = isMe ? 'msg-wrapper my-msg-wrapper' : 'msg-wrapper';
 
@@ -1233,12 +1339,13 @@
                     }
                 }
 
-                const contentHTML = autoLink(data.text || "");
+                const contentHTML = formatMessageText(data.text || "");
+                const messageClass = isMentioned ? "message mentioned-message" : "message";
 
                 msgWrapper.innerHTML = `
                     ${senderHTML}
                     <div class="msg-content-row">
-                        <div class="message">
+                        <div class="${messageClass}">
                             ${contentHTML}
                             ${fileHTML}
                         </div>
@@ -1396,8 +1503,9 @@
           snapshot.docChanges().forEach((change) => {
             if (change.type === "added" && !isFirstCardLoad) {
                 const newCard = change.doc.data();
+                // 사용자가 화면을 비우고 있고 알림이 켜진 경우에만 카놀라 알림 발송
                 if (isUserAway() && newCard.assignee !== myName) {
-                    triggerDesktopNotification("📌 새 업무 카드 추가됨", `${newCard.assignee || '누군가'}: ${newCard.title}`);
+                    triggerDesktopNotification("📌 새 업무 카드 추가됨", `${newCard.assignee || '누군가'}: ${newCard.title}`, false);
                 }
             }
           });
@@ -1418,7 +1526,7 @@
             if (data.createdAt) metaHTML += `<span class="card-badge">🕒 ${formatTime(data.createdAt)}</span>`;
 
             cardEl.innerHTML = `
-                <div class="card-title">${autoLink(data.title)}</div>
+                <div class="card-title">${formatMessageText(data.title)}</div>
                 <div class="card-meta">${metaHTML}</div>
             `;
 
