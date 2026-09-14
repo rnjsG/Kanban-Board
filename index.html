@@ -87,7 +87,21 @@
             font-weight: 600;
             color: #334155;
             outline: none;
-            width: 120px;
+            width: 100px;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 2px 4px;
+        }
+
+        .logout-btn:hover {
+            color: var(--lg-red);
         }
 
         .main-container {
@@ -612,7 +626,8 @@
         </div>
         <div class="user-profile">
             <span>👤 내 이름:</span>
-            <input type="text" id="username-input" value="" readonly style="cursor: pointer;" onclick="promptChangeUser()" title="이름을 변경하려면 클릭하세요">
+            <input type="text" id="username-input" value="" readonly style="cursor: pointer;" onclick="promptChangeUser()" title="이름 변경 시 클릭">
+            <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
         </div>
     </header>
 
@@ -726,7 +741,7 @@
     </div>
 
     <!-- 비밀번호/가입 모달 -->
-    <div class="modal-overlay" id="auth-modal" style="display: flex;">
+    <div class="modal-overlay" id="auth-modal" style="display: none;">
         <div class="modal">
             <h2 id="auth-title">로그인 / 회원가입</h2>
             <p style="font-size: 13px; color: var(--text-sub);">닉네임과 비밀번호(숫자 4자리)를 입력하세요.</p>
@@ -769,6 +784,7 @@
         }
 
         let myName = localStorage.getItem('kanban_username') || "";
+        let myPin = localStorage.getItem('kanban_pin') || "";
         let myJoinTimestamp = null;
         let totalOnlineCount = 1;
         let onlineUsersList = [];
@@ -779,9 +795,37 @@
         const authPinInput = document.getElementById('auth-pin-input');
         const usernameInput = document.getElementById('username-input');
 
-        if (myName) {
+        // 엔터 키 이벤트 등록
+        [authNameInput, authPinInput].forEach(input => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAuthSubmit();
+                }
+            });
+        });
+
+        // 자동 로그인 시도
+        async function autoLogin() {
+            if (myName && myPin) {
+                const userRef = doc(db, "users", myName);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists() && userSnap.data().pin === myPin) {
+                    myJoinTimestamp = userSnap.data().joinedAt;
+                    usernameInput.value = myName;
+                    updatePresence();
+                    startChatListener();
+                    return;
+                }
+            }
+            // 저장된 정보가 없거나 검증 실패 시 모달 표시
             authNameInput.value = myName;
+            authPinInput.value = "";
+            authModal.style.display = "flex";
         }
+
+        autoLogin();
 
         // 로그인 / 가입 로직
         window.handleAuthSubmit = async function() {
@@ -809,7 +853,6 @@
                 }
                 myJoinTimestamp = userData.joinedAt;
             } else {
-                // 신규 등록 (가입 시점의 Timestamp 생성)
                 myJoinTimestamp = Timestamp.now();
                 await setDoc(userRef, {
                     name: inputName,
@@ -819,12 +862,25 @@
             }
 
             myName = inputName;
+            myPin = inputPin;
             localStorage.setItem('kanban_username', myName);
+            localStorage.setItem('kanban_pin', myPin);
+            
             usernameInput.value = myName;
             authModal.style.display = "none";
 
             updatePresence();
             startChatListener();
+        };
+
+        // 로그아웃 로직
+        window.handleLogout = function() {
+            if (confirm("로그아웃 하시겠습니까?")) {
+                removePresenceBeacon();
+                localStorage.removeItem('kanban_username');
+                localStorage.removeItem('kanban_pin');
+                location.reload();
+            }
         };
 
         window.promptChangeUser = function() {
@@ -1046,7 +1102,6 @@
             reader.readAsDataURL(file);
         };
 
-        // 가입 시각 이후의 메시지만 수신하는 리스너
         function startChatListener() {
             if (chatUnsubscribe) chatUnsubscribe();
 
@@ -1127,7 +1182,6 @@
             });
         }
 
-        // 보드 카드 로직
         const cardsData = {};
 
         window.handleModalFileUpload = function(event) {
