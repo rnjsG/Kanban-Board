@@ -904,8 +904,8 @@ body {
 
       <div class="chat-tools-row">
         <input type="file" id="chat-file-input" style="display: none;" onchange="handleChatFileUpload(event)">
-        <button type="button" class="attach-btn" onclick="document.getElementById('chat-file-input').click()">첨부</button>
-        <button type="button" class="emoji-toggle-btn" onclick="toggleEmojiPicker(event)">이모티콘</button>
+        <button type="button" class="attach-btn" onclick="document.getElementById('chat-file-input').click()">📁 첨부</button>
+        <button type="button" class="emoji-toggle-btn" onclick="toggleEmojiPicker(event)">😊 이모티콘</button>
       </div>
 
       <div class="chat-input-row">
@@ -1196,22 +1196,22 @@ function triggerDesktopNotification(title, body, isForceMention = false) {
 function updateNotiButtonUI() {
   const btn = document.getElementById('noti-toggle-btn');
   if (!("Notification" in window)) {
-    btn.innerText = "알림 미지원";
+    btn.innerText = "🔕알림 미지원";
     return;
   }
   if (Notification.permission === "denied") {
-    btn.innerText = "알림 차단됨";
+    btn.innerText = "🔕알림 차단됨";
     btn.style.color = "#EF4444";
   } else if (Notification.permission === "granted") {
     if (isNotificationMuted) {
-      btn.innerText = "알림 끔 (Mute)";
+      btn.innerText = "🔕알림 끔 (Mute)";
       btn.style.color = "#6C757D";
     } else {
-      btn.innerText = "알림 켜짐";
+      btn.innerText = "🔔 알림 켜짐";
       btn.style.color = "#22C55E";
     }
   } else {
-    btn.innerText = "알림 권한 설정";
+    btn.innerText = "🔔 알림 권한 설정";
     btn.style.color = "#475569";
   }
 }
@@ -1522,7 +1522,7 @@ function startChatListener() {
         const isMentioned = newMsg.text && newMsg.text.includes(`@${myName}`);
         if (newMsg.sender !== myName) {
           if (isMentioned) {
-            triggerDesktopNotification(`${newMsg.sender}님이 나를 언급했습니다!`, newMsg.text, true);
+            triggerDesktopNotification(`📣 ${newMsg.sender}님이 나를 언급했습니다!`, newMsg.text, true);
           } else if (isUserAway()) {
             const notifyText = newMsg.text || (newMsg.fileName ? `[파일 첨부] ${newMsg.fileName}` : "새 메시지가 도착했습니다.");
             triggerDesktopNotification(`${newMsg.sender}님의 메시지`, notifyText, false);
@@ -1760,7 +1760,7 @@ onSnapshot(qCards, (snapshot) => {
     if (change.type === "added" && !isFirstCardLoad) {
       const newCard = change.doc.data();
       if (isUserAway() && newCard.assignee !== myName) {
-        triggerDesktopNotification("새 업무 카드 추가됨", `${newCard.assignee || '누군가'}: ${newCard.title}`, false);
+        triggerDesktopNotification("📌새 업무 카드 추가됨", `${newCard.assignee || '누군가'}: ${newCard.title}`, false);
       }
     }
   });
@@ -1775,10 +1775,11 @@ onSnapshot(qCards, (snapshot) => {
     cardEl.draggable = true;
 
     let metaHTML = '';
-    if (data.assignee) metaHTML += `<span class="card-badge">${data.assignee}</span>`;
-    if (data.dueDate) metaHTML += `<span class="card-badge">${data.dueDate}</span>`;
-    if (data.fileName) metaHTML += '<span class="card-badge">파일첨부</span>';
-    if (data.createdAt) metaHTML += `<span class="card-badge">${formatTime(data.createdAt)}</span>`;
+    if (data.assignee) metaHTML += `<span class="card-badge">👤 ${data.assignee}</span>`;
+    if (data.dueDate) metaHTML += `<span class="card-badge">📅 ${data.dueDate}</span>`;
+    if (data.fileName) metaHTML += `<span class="card-badge">📁 파일첨부</span>`;
+    if (data.createdAt) metaHTML += `<span class="card-badge">🕒 ${formatTime(data.createdAt)}</span>`;
+
 
     cardEl.innerHTML = `
       <div class="card-title">${formatMessageText(data.title)}</div>
