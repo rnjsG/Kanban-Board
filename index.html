@@ -1140,7 +1140,7 @@ function removePresenceBeacon() {
   navigator.sendBeacon(url + "?method=DELETE");
 }
 
-setInterval(updatePresence, 10000);
+setInterval(updatePresence, 60000);
 window.addEventListener('pagehide', removePresenceBeacon);
 window.addEventListener('beforeunload', removePresenceBeacon);
 
@@ -1151,7 +1151,7 @@ onSnapshot(collection(db, "presence"), (snapshot) => {
     const data = d.data();
     if (data.lastSeen) {
       const lastSeenTime = data.lastSeen.toDate ? data.lastSeen.toDate().getTime() : now;
-      if (now - lastSeenTime < 30000) {
+      if (now - lastSeenTime < 120000) {
         activeUsers.push(data.name || "익명");
       }
     }
