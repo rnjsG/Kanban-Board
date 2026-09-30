@@ -1,1755 +1,1809 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LG화학 K뉴딜 아카데미 오산 2기 6조 - 협업 보드</title>
-    <style>
-        :root {
-            --lg-red: #A50034;
-            --lg-red-hover: #800028;
-            --bg-color: #F4F6F9;
-            --card-bg: #FFFFFF;
-            --text-main: #1E2229;
-            --text-sub: #6C757D;
-            --border-color: #E2E8F0;
-            --header-bg: #FFFFFF;
-            --column-bg: #EDF2F7;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            overflow: hidden;
-        }
-
-        .app-header {
-            height: 60px;
-            background-color: var(--header-bg);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            z-index: 10;
-        }
-
-        .header-title-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-badge {
-            background-color: var(--lg-red);
-            color: white;
-            font-weight: 800;
-            font-size: 14px;
-            padding: 6px 10px;
-            border-radius: 6px;
-            letter-spacing: 0.3px;
-            display: inline-block;
-            line-height: 1;
-        }
-
-        .header-title-area h1 {
-            font-size: 19px;
-            font-weight: 800;
-            color: var(--text-main);
-            letter-spacing: -0.3px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            background: #F8FAFC;
-            padding: 6px 12px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-        }
-
-        .user-profile input {
-            border: none;
-            background: transparent;
-            font-weight: 600;
-            color: #334155;
-            outline: none;
-            width: 100px;
-        }
-
-        .logout-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-sub);
-            font-size: 12px;
-            cursor: pointer;
-            text-decoration: underline;
-            padding: 2px 4px;
-        }
-
-        .logout-btn:hover {
-            color: var(--lg-red);
-        }
-
-        .main-container {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - 60px);
-            overflow: hidden;
-        }
-
-        .board-container {
-            flex: 1;
-            padding: 24px;
-            display: flex;
-            gap: 20px;
-            overflow-x: auto;
-        }
-
-        .column {
-            background-color: var(--column-bg);
-            width: 320px;
-            min-width: 320px;
-            border-radius: 12px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            max-height: 100%;
-            border: 1px solid rgba(0,0,0,0.03);
-        }
-
-        .column-header {
-            font-size: 15px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            color: #334155;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .card-list {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            min-height: 100px;
-            padding-right: 2px;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            padding: 16px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-            border: 1px solid var(--border-color);
-            cursor: grab;
-            transition: all 0.2s ease;
-        }
-
-        .card:hover {
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            border-color: #CBD5E1;
-            transform: translateY(-2px);
-        }
-
-        .card:active {
-            cursor: grabbing;
-        }
-
-        .card-title {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: var(--text-main);
-            line-height: 1.4;
-            word-break: break-all;
-        }
-
-        .card-meta {
-            font-size: 12px;
-            color: var(--text-sub);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .card-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            background-color: #F1F5F9;
-            color: #475569;
-            font-weight: 500;
-        }
-
-        .add-card-btn {
-            margin-top: 12px;
-            padding: 10px;
-            background-color: transparent;
-            color: var(--text-sub);
-            border: 1px dashed #CBD5E1;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .add-card-btn:hover {
-            background-color: #FFFFFF;
-            color: var(--lg-red);
-            border-color: var(--lg-red);
-        }
-
-        .chat-container {
-            width: 400px;
-            background-color: var(--header-bg);
-            border-left: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .chat-header {
-            padding: 14px 20px;
-            border-bottom: 1px solid var(--border-color);
-            font-weight: 700;
-            font-size: 15px;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-        }
-
-        .chat-header-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .chat-header-title::before {
-            content: '';
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background-color: #22C55E;
-            border-radius: 50%;
-        }
-
-        .online-count-badge {
-            font-size: 11px;
-            background: #E2E8F0;
-            color: #475569;
-            padding: 3px 8px;
-            border-radius: 10px;
-            margin-left: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-            user-select: none;
-        }
-
-        .online-count-badge:hover {
-            background: #CBD5E1;
-            color: #1E293B;
-        }
-
-        .online-users-popover {
-            display: none;
-            position: absolute;
-            top: 48px;
-            left: 120px;
-            background: #FFFFFF;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            width: 180px;
-            padding: 12px;
-            z-index: 60;
-        }
-
-        .online-users-popover.active {
-            display: block;
-        }
-
-        .online-users-popover-title {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-sub);
-            margin-bottom: 8px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid #F1F5F9;
-        }
-
-        .online-users-list {
-            list-style: none;
-            max-height: 160px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .online-user-item {
-            font-size: 13px;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 500;
-        }
-
-        .online-user-item::before {
-            content: '';
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            background-color: #22C55E;
-            border-radius: 50%;
-        }
-
-        .noti-btn {
-            background: #F1F5F9;
-            border: 1px solid var(--border-color);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            color: #475569;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .noti-btn:hover {
-            background: #E2E8F0;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background-color: #FAFAFA;
-        }
-
-        .msg-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            max-width: 85%;
-            position: relative;
-        }
-
-        .msg-wrapper.my-msg-wrapper {
-            align-items: flex-end;
-            align-self: flex-end;
-        }
-
-        .msg-sender {
-            font-size: 11px;
-            color: var(--text-sub);
-            margin-bottom: 4px;
-            padding: 0 4px;
-        }
-
-        .msg-content-row {
-            display: flex;
-            align-items: flex-end;
-            gap: 6px;
-            position: relative;
-        }
-
-        .msg-wrapper.my-msg-wrapper .msg-content-row {
-            flex-direction: row-reverse;
-        }
-
-        .msg-info-column {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 2px;
-        }
-
-        .msg-wrapper.my-msg-wrapper .msg-info-column {
-            align-items: flex-end;
-        }
-
-        .unread-count {
-            font-size: 10px;
-            font-weight: 700;
-            color: #EAB308;
-        }
-
-        .msg-time {
-            font-size: 10px;
-            color: #94A3B8;
-            white-space: nowrap;
-        }
-
-        .message {
-            background-color: #FFFFFF;
-            padding: 10px 14px;
-            border-radius: 12px;
-            border-top-left-radius: 2px;
-            font-size: 13px;
-            line-height: 1.5;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
-            word-break: break-all;
-            cursor: context-menu; /* 우클릭 시 메뉴가 떠오름을 시각적으로 표시 */
-            user-select: text;
-        }
-
-        .msg-wrapper.my-msg-wrapper .message {
-            background-color: var(--lg-red);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            border-top-right-radius: 2px;
-        }
-
-        /* 우클릭 커스텀 메뉴 스타일 */
-        .chat-context-menu {
-            display: none;
-            position: fixed;
-            background: #FFFFFF;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            z-index: 1000;
-            width: 120px;
-            padding: 4px 0;
-        }
-
-        .chat-context-menu.active {
-            display: block;
-        }
-
-        .context-menu-item {
-            padding: 8px 12px;
-            font-size: 13px;
-            color: var(--text-main);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: background 0.15s;
-        }
-
-        .context-menu-item:hover {
-            background-color: #F1F5F9;
-            color: var(--lg-red);
-        }
-
-        .context-menu-item.danger:hover {
-            color: #EF4444;
-        }
-
-        /* 인용 답장 박스 스타일 */
-        .reply-quote-box {
-            background-color: rgba(0, 0, 0, 0.05);
-            border-left: 3px solid var(--lg-red);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            margin-bottom: 6px;
-            color: #475569;
-            word-break: break-all;
-        }
-
-        .msg-wrapper.my-msg-wrapper .reply-quote-box {
-            background-color: rgba(255, 255, 255, 0.2);
-            border-left-color: #FFFFFF;
-            color: #FFF;
-        }
-
-        .reply-sender-label {
-            font-weight: 700;
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        .edited-tag {
-            font-size: 10px;
-            opacity: 0.7;
-            margin-left: 4px;
-        }
-
-        .message.mentioned-message {
-            background-color: #FEF3C7 !important;
-            border: 1.5px solid #F59E0B !important;
-            color: #92400E !important;
-        }
-
-        .mention-tag {
-            background: rgba(37, 99, 235, 0.1);
-            color: #2563EB;
-            font-weight: 700;
-            padding: 1px 5px;
-            border-radius: 4px;
-        }
-
-        .msg-wrapper.my-msg-wrapper .mention-tag {
-            background: rgba(255, 255, 255, 0.3);
-            color: #FFFFFF;
-        }
-
-        .message a, .card-title a, .card-desc a {
-            color: #2563EB;
-            text-decoration: underline;
-        }
-
-        .msg-wrapper.my-msg-wrapper .message a {
-            color: #FFD1DC;
-        }
-
-        .chat-file-img {
-            max-width: 100%;
-            border-radius: 8px;
-            margin-top: 6px;
-            display: block;
-        }
-
-        .chat-file-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(0, 0, 0, 0.05);
-            padding: 6px 10px;
-            border-radius: 6px;
-            margin-top: 6px;
-            font-size: 12px;
-            text-decoration: none !important;
-            color: inherit !important;
-        }
-
-        .msg-wrapper.my-msg-wrapper .chat-file-link {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .chat-input-area {
-            padding: 16px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            background-color: #FFFFFF;
-            position: relative;
-        }
-
-        /* 답장 프리뷰 헤더 */
-        .reply-preview-bar {
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            background: #F1F5F9;
-            border-left: 3px solid var(--lg-red);
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            color: #334155;
-        }
-
-        .reply-preview-bar.active {
-            display: flex;
-        }
-
-        .reply-cancel-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #64748B;
-            font-weight: 700;
-        }
-
-        .chat-tools-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .chat-input-row {
-            display: flex;
-            gap: 8px;
-            position: relative;
-        }
-
-        .chat-input-area input[type="text"] {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            outline: none;
-            font-size: 14px;
-            transition: border-color 0.2s;
-        }
-
-        .chat-input-area input[type="text"]:focus {
-            border-color: var(--lg-red);
-        }
-
-        .chat-input-area button {
-            padding: 10px 18px;
-            background-color: var(--lg-red);
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-
-        .chat-input-area button:hover {
-            background-color: var(--lg-red-hover);
-        }
-
-        .attach-btn, .emoji-toggle-btn {
-            background-color: #F1F5F9 !important;
-            color: #475569 !important;
-            border: 1px solid var(--border-color) !important;
-            padding: 6px 12px !important;
-            border-radius: 6px !important;
-            font-size: 12px !important;
-            cursor: pointer;
-            width: fit-content;
-        }
-
-        .mention-dropdown {
-            display: none;
-            position: absolute;
-            bottom: 105%;
-            left: 0;
-            width: 200px;
-            max-height: 160px;
-            overflow-y: auto;
-            background: #FFFFFF;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            z-index: 70;
-            list-style: none;
-            padding: 4px 0;
-        }
-
-        .mention-dropdown.active {
-            display: block;
-        }
-
-        .mention-dropdown-item {
-            padding: 8px 12px;
-            font-size: 13px;
-            color: var(--text-main);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .mention-dropdown-item:hover, .mention-dropdown-item.selected {
-            background-color: #F1F5F9;
-            color: var(--lg-red);
-            font-weight: 600;
-        }
-
-        .emoji-picker-box {
-            display: none;
-            position: absolute;
-            bottom: 105%;
-            left: 16px;
-            width: 320px;
-            max-height: 220px;
-            overflow-y: auto;
-            background: #FFFFFF;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            grid-template-columns: repeat(8, 1fr);
-            gap: 4px;
-            z-index: 50;
-        }
-
-        .emoji-picker-box.active {
-            display: grid;
-        }
-
-        .emoji-btn {
-            background: transparent !important;
-            border: none !important;
-            font-size: 18px !important;
-            padding: 4px !important;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: background 0.15s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-            height: 32px;
-            width: 32px;
-        }
-
-        .emoji-btn:hover {
-            background: #F1F5F9 !important;
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.5);
-            backdrop-filter: blur(4px);
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .modal {
-            background: white;
-            padding: 28px;
-            border-radius: 12px;
-            width: 420px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .modal h2 { font-size: 18px; color: var(--text-main); font-weight: 700; }
-        .modal label { font-size: 13px; font-weight: 600; color: #475569; display: flex; flex-direction: column; gap: 6px; }
-        .modal input, .modal textarea { padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; }
-        .modal input:focus, .modal textarea:focus { border-color: var(--lg-red); }
-
-        .modal-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
-        .btn-save { background-color: var(--lg-red); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-        .btn-save:hover { background-color: var(--lg-red-hover); }
-        .btn-delete { background-color: #EF4444; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-        .btn-close { background-color: #F1F5F9; color: #475569; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LG화학 K뉴딜 아카데미 오산 2기 6조 - 협업 보드</title>
+<style>
+:root {
+  --lg-red: #A50034;
+  --lg-red-hover: #800028;
+  --bg-color: #F4F6F9;
+  --card-bg: #FFFFFF;
+  --text-main: #1E2229;
+  --text-sub: #6C757D;
+  --border-color: #E2E8F0;
+  --header-bg: #FFFFFF;
+  --column-bg: #EDF2F7;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  overflow: hidden;
+}
+
+/* Header */
+.app-header {
+  height: 60px;
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  z-index: 10;
+}
+
+.header-title-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-badge {
+  background-color: var(--lg-red);
+  color: white;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+  display: inline-block;
+  line-height: 1;
+}
+
+.header-title-area h1 {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.3px;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  background: #F8FAFC;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.user-profile input {
+  border: none;
+  background: transparent;
+  font-weight: 600;
+  color: #334155;
+  outline: none;
+  width: 100px;
+}
+
+.logout-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-sub);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 2px 4px;
+}
+
+.logout-btn:hover {
+  color: var(--lg-red);
+}
+
+/* Main Layout */
+.main-container {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 60px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Kanban Board Section */
+.board-container {
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  transition: all 0.3s ease;
+}
+
+.column {
+  background-color: var(--column-bg);
+  width: 320px;
+  min-width: 320px;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+.column-header {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 100px;
+  padding-right: 2px;
+}
+
+.card {
+  background-color: var(--card-bg);
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  border: 1px solid var(--border-color);
+  cursor: grab;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 6px 1px rgba(0,0,0,0.1);
+  border-color: #CBD5E1;
+  transform: translateY(-2px);
+}
+
+.card:active {
+  cursor: grabbing;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text-main);
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.card-meta {
+  font-size: 12px;
+  color: var(--text-sub);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #F1F5F9;
+  color: #475569;
+  font-weight: 500;
+}
+
+.add-card-btn {
+  margin-top: 12px;
+  padding: 10px;
+  background-color: transparent;
+  color: var(--text-sub);
+  border: 1px dashed #CBD5E1;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.add-card-btn:hover {
+  background-color: #FFFFFF;
+  color: var(--lg-red);
+  border-color: var(--lg-red);
+}
+
+/* Chat Section & 접기/펼치기 애니메이션 */
+.chat-container {
+  width: 400px;
+  background-color: var(--header-bg);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: margin-right 0.3s ease;
+}
+
+.chat-container.collapsed {
+  margin-right: -400px;
+}
+
+/* 채팅 접기/펼치기 화살표 버튼 */
+.chat-toggle-btn {
+  position: absolute;
+  left: -28px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 56px;
+  background-color: var(--header-bg);
+  border: 1px solid var(--border-color);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--text-sub);
+  box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+  z-index: 20;
+  user-select: none;
+}
+
+.chat-toggle-btn:hover {
+  color: var(--lg-red);
+  background-color: #F8FAFC;
+}
+
+.chat-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.chat-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-header-title::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #22C55E;
+  border-radius: 50%;
+}
+
+.online-count-badge {
+  font-size: 11px;
+  background: #E2E8F0;
+  color: #475569;
+  padding: 3px 8px;
+  border-radius: 10px;
+  margin-left: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.online-count-badge:hover {
+  background: #CBD5E1;
+  color: #1E293B;
+}
+
+.online-users-popover {
+  display: none;
+  position: absolute;
+  top: 48px;
+  left: 120px;
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  width: 180px;
+  padding: 12px;
+  z-index: 60;
+}
+
+.online-users-popover.active {
+  display: block;
+}
+
+.online-users-popover-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-sub);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.online-users-list {
+  list-style: none;
+  max-height: 160px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.online-user-item {
+  font-size: 13px;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.online-user-item::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: #22C55E;
+  border-radius: 50%;
+}
+
+.noti-btn {
+  background: #F1F5F9;
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #475569;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.noti-btn:hover {
+  background: #E2E8F0;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: #FAFAFA;
+}
+
+.msg-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 85%;
+  position: relative;
+}
+
+.msg-wrapper.my-msg-wrapper {
+  align-items: flex-end;
+  align-self: flex-end;
+}
+
+.msg-sender {
+  font-size: 11px;
+  color: var(--text-sub);
+  margin-bottom: 4px;
+  padding: 0 4px;
+}
+
+.msg-content-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  position: relative;
+}
+
+.msg-wrapper.my-msg-wrapper .msg-content-row {
+  flex-direction: row-reverse;
+}
+
+.msg-info-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.msg-wrapper.my-msg-wrapper .msg-info-column {
+  align-items: flex-end;
+}
+
+.unread-count {
+  font-size: 10px;
+  font-weight: 700;
+  color: #EAB308;
+}
+
+.msg-time {
+  font-size: 10px;
+  color: #94A3B8;
+  white-space: nowrap;
+}
+
+.message {
+  background-color: #FFFFFF;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border-top-left-radius: 2px;
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
+  word-break: break-all;
+  cursor: context-menu;
+  user-select: text;
+}
+
+.msg-wrapper.my-msg-wrapper .message {
+  background-color: var(--lg-red);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  border-top-right-radius: 2px;
+}
+
+/* Right Click Context Menu */
+.chat-context-menu {
+  display: none;
+  position: fixed;
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  z-index: 1000;
+  width: 120px;
+  padding: 4px 0;
+}
+
+.chat-context-menu.active {
+  display: block;
+}
+
+.context-menu-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s;
+}
+
+.context-menu-item:hover {
+  background-color: #F1F5F9;
+  color: var(--lg-red);
+}
+
+.context-menu-item.danger:hover {
+  color: #EF4444;
+}
+
+/* Reply Quote UI */
+.reply-quote-box {
+  background-color: rgba(0,0,0,0.05);
+  border-left: 3px solid var(--lg-red);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-bottom: 6px;
+  color: #475569;
+  word-break: break-all;
+}
+
+.msg-wrapper.my-msg-wrapper .reply-quote-box {
+  background-color: rgba(255,255,255,0.2);
+  border-left-color: #FFFFFF;
+  color: #FFF;
+}
+
+.reply-sender-label {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.edited-tag {
+  font-size: 10px;
+  opacity: 0.7;
+  margin-left: 4px;
+}
+
+.message.mentioned-message {
+  background-color: #FEF3C7 !important;
+  border: 1.5px solid #F59E0B !important;
+  color: #92400E !important;
+}
+
+.mention-tag {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563EB;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.msg-wrapper.my-msg-wrapper .mention-tag {
+  background: rgba(255,255,255,0.3);
+  color: #FFFFFF;
+}
+
+.message a, .card-title a, .card-desc a {
+  color: #2563EB;
+  text-decoration: underline;
+}
+
+.msg-wrapper.my-msg-wrapper .message a {
+  color: #FFD1DC;
+}
+
+.chat-file-img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 6px;
+  display: block;
+}
+
+.chat-file-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.05);
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-top: 6px;
+  font-size: 12px;
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+.msg-wrapper.my-msg-wrapper .chat-file-link {
+  background: rgba(255,255,255,0.2);
+}
+
+.chat-input-area {
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #FFFFFF;
+  position: relative;
+}
+
+.reply-preview-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  background: #F1F5F9;
+  border-left: 3px solid var(--lg-red);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #334155;
+}
+
+.reply-preview-bar.active {
+  display: flex;
+}
+
+.reply-cancel-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748B;
+  font-weight: 700;
+}
+
+.chat-tools-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 8px;
+  position: relative;
+}
+
+.chat-input-area input[type="text"] {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  outline: none;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.chat-input-area input[type="text"]:focus {
+  border-color: var(--lg-red);
+}
+
+.chat-input-area button {
+  padding: 10px 18px;
+  background-color: var(--lg-red);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.chat-input-area button:hover {
+  background-color: var(--lg-red-hover);
+}
+
+.attach-btn, .emoji-toggle-btn {
+  background-color: #F1F5F9 !important;
+  color: #475569 !important;
+  border: 1px solid var(--border-color) !important;
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.mention-dropdown {
+  display: none;
+  position: absolute;
+  bottom: 105%;
+  left: 0;
+  width: 200px;
+  max-height: 160px;
+  overflow-y: auto;
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  z-index: 70;
+  list-style: none;
+  padding: 4px 0;
+}
+
+.mention-dropdown.active {
+  display: block;
+}
+
+.mention-dropdown-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mention-dropdown-item:hover, .mention-dropdown-item.selected {
+  background-color: #F1F5F9;
+  color: var(--lg-red);
+  font-weight: 600;
+}
+
+/* 확장된 이모티콘 팝업 박스 (총 40개) */
+.emoji-picker-box {
+  display: none;
+  position: absolute;
+  bottom: 105%;
+  left: 16px;
+  width: 330px;
+  max-height: 250px;
+  overflow-y: auto;
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  z-index: 50;
+}
+
+.emoji-picker-box.active {
+  display: grid;
+}
+
+.emoji-btn {
+  background: transparent !important;
+  border: none !important;
+  font-size: 18px !important;
+  padding: 4px !important;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  height: 32px;
+  width: 32px;
+}
+
+.emoji-btn:hover {
+  background: #F1F5F9 !important;
+}
+
+/* Modals */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal {
+  background: white;
+  padding: 28px;
+  border-radius: 12px;
+  width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal h2 { font-size: 18px; color: var(--text-main); font-weight: 700; }
+.modal label { font-size: 13px; font-weight: 600; color: #475569; display: flex; flex-direction: column; gap: 6px; }
+.modal input, .modal textarea { padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; }
+.modal input:focus, .modal textarea:focus { border-color: var(--lg-red); }
+.modal-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.btn-save { background-color: var(--lg-red); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.btn-save:hover { background-color: var(--lg-red-hover); }
+.btn-delete { background-color: #EF4444; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.btn-close { background-color: #F1F5F9; color: #475569; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+</style>
 </head>
 <body>
 
-    <header class="app-header">
-        <div class="header-title-area">
-            <span class="logo-badge">LG Chem</span>
-            <h1>LG화학 K뉴딜 아카데미 오산 2기 6조</h1>
-        </div>
-        <div class="user-profile">
-            <span>👤 내 이름:</span>
-            <input type="text" id="username-input" value="" readonly style="cursor: pointer;" onclick="promptChangeUser()" title="이름 변경 시 클릭">
-            <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
-        </div>
-    </header>
+<header class="app-header">
+  <div class="header-title-area">
+    <span class="logo-badge">LG Chem</span>
+    <h1>LG화학 K뉴딜 아카데미 오산 2기 6조</h1>
+  </div>
+  <div class="user-profile">
+    <span>내 이름:</span>
+    <input type="text" id="username-input" value="" readonly style="cursor: pointer;" onclick="promptChangeUser()" title="이름 변경 시 클릭">
+    <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
+  </div>
+</header>
 
-    <div class="main-container">
-        <main class="board-container">
-            <div class="column">
-                <div class="column-header">To Do (할 일)</div>
-                <div class="card-list" id="todo" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
-                <button class="add-card-btn" onclick="openAddModal('todo')">+ 업무 카드 추가</button>
-            </div>
+<div class="main-container">
+  <main class="board-container">
+    <div class="column">
+      <div class="column-header">To Do (할 일)</div>
+      <div class="card-list" id="todo" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+      <button class="add-card-btn" onclick="openAddModal('todo')">+ 업무 카드 추가</button>
+    </div>
+    <div class="column">
+      <div class="column-header">In Progress (진행중)</div>
+      <div class="card-list" id="doing" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+      <button class="add-card-btn" onclick="openAddModal('doing')">+ 업무 카드 추가</button>
+    </div>
+    <div class="column">
+      <div class="column-header">Done (완료)</div>
+      <div class="card-list" id="done" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+      <button class="add-card-btn" onclick="openAddModal('done')">+ 업무 카드 추가</button>
+    </div>
+  </main>
 
-            <div class="column">
-                <div class="column-header">In Progress (진행 중)</div>
-                <div class="card-list" id="doing" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
-                <button class="add-card-btn" onclick="openAddModal('doing')">+ 업무 카드 추가</button>
-            </div>
+  <aside class="chat-container" id="chat-container">
+    <button class="chat-toggle-btn" id="chat-toggle-btn" onclick="toggleChatContainer()" title="채팅창 접기/펼치기">▶</button>
 
-            <div class="column">
-                <div class="column-header">Done (완료)</div>
-                <div class="card-list" id="done" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
-                <button class="add-card-btn" onclick="openAddModal('done')">+ 업무 카드 추가</button>
-            </div>
-        </main>
-
-        <aside class="chat-container">
-            <div class="chat-header">
-                <span class="chat-header-title">
-                    팀 실시간 라이브 채팅
-                    <span class="online-count-badge" id="online-count-display" onclick="toggleOnlineUsersPopover(event)">1명</span>
-                </span>
-                
-                <div class="online-users-popover" id="online-users-popover">
-                    <div class="online-users-popover-title">현재 참여자 목록</div>
-                    <ul class="online-users-list" id="online-users-list">
-                        <li class="online-user-item">로딩 중...</li>
-                    </ul>
-                </div>
-
-                <button class="noti-btn" id="noti-toggle-btn" onclick="toggleNotificationSetting()">🔔 알림 권한 설정</button>
-            </div>
-            <div class="chat-messages" id="chat-messages">
-                <div class="message"><strong>알림:</strong> 로그인 대기 중...</div>
-            </div>
-            
-            <div class="chat-input-area">
-                <!-- 답장 모드 프리뷰 바 -->
-                <div class="reply-preview-bar" id="reply-preview-bar">
-                    <span id="reply-preview-text">~님에게 답장 중</span>
-                    <button class="reply-cancel-btn" onclick="cancelReplyMode()">✕</button>
-                </div>
-
-                <div class="emoji-picker-box" id="emoji-picker">
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('👏')">👏</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('✅')">✅</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🙏')">🙏</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('💡')">💡</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('💪')">💪</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('✨')">✨</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('😎')">😎</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🤔')">🤔</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('😭')">😭</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('😍')">😍</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🙌')">🙌</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🥳')">🥳</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🚀')">🚀</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('📌')">📌</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('📝')">📝</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('⭐')">⭐</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('💯')">💯</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('👀')">👀</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('👌')">👌</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🤝')">🤝</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('💖')">💖</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🙋‍♂️')">🙋‍♂️</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('🙋‍♀️')">🙋‍♀️</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('⚠️')">⚠️</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('❓')">❓</button>
-                    <button type="button" class="emoji-btn" onclick="insertEmoji('❗')">❗</button>
-                </div>
-
-                <div class="chat-tools-row">
-                    <input type="file" id="chat-file-input" style="display: none;" onchange="handleChatFileUpload(event)">
-                    <button type="button" class="attach-btn" onclick="document.getElementById('chat-file-input').click()">📁 첨부</button>
-                    <button type="button" class="emoji-toggle-btn" onclick="toggleEmojiPicker(event)">😊 이모티콘</button>
-                </div>
-
-                <div class="chat-input-row">
-                    <ul class="mention-dropdown" id="mention-dropdown"></ul>
-                    <input type="text" id="chat-input" placeholder="메시지 입력... (@로 멘션 가능)" autocomplete="off">
-                    <button id="send-btn">전송</button>
-                </div>
-            </div>
-        </aside>
+    <div class="chat-header">
+      <span class="chat-header-title">
+        팀 실시간 라이브 채팅
+        <span class="online-count-badge" id="online-count-display" onclick="toggleOnlineUsersPopover(event)">1명</span>
+      </span>
+      <div class="online-users-popover" id="online-users-popover">
+        <div class="online-users-popover-title">현재 참여자 목록</div>
+        <ul class="online-users-list" id="online-users-list">
+          <li class="online-user-item">로딩 중...</li>
+        </ul>
+      </div>
+      <button class="noti-btn" id="noti-toggle-btn" onclick="toggleNotificationSetting()">알림 권한 설정</button>
     </div>
 
-    <!-- 우클릭 컨텍스트 메뉴 element -->
-    <div class="chat-context-menu" id="chat-context-menu">
-        <div class="context-menu-item" id="ctx-reply">↩️ 답장 (인용)</div>
-        <div class="context-menu-item" id="ctx-edit">✏️ 수정</div>
-        <div class="context-menu-item danger" id="ctx-delete">🗑️ 삭제</div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="message"><strong>알림:</strong> 로그인 대기 중...</div>
     </div>
 
-    <!-- 카드 상세 모달 -->
-    <div class="modal-overlay" id="card-modal">
-        <div class="modal">
-            <h2 id="modal-title">업무 상세 정보</h2>
-            <input type="hidden" id="modal-card-id">
-            <input type="hidden" id="modal-card-status">
-            
-            <label>
-                카드 제목
-                <input type="text" id="modal-card-name" placeholder="제목을 입력하세요">
-            </label>
-            <label>
-                상세 설명
-                <textarea id="modal-card-desc" rows="3" placeholder="상세 내용이나 메모를 입력하세요"></textarea>
-            </label>
-            <label>
-                담당자
-                <input type="text" id="modal-card-assignee" placeholder="담당자 이름">
-            </label>
-            <label>
-                마감일
-                <input type="date" id="modal-card-duedate">
-            </label>
-            <label>
-                파일/이미지 첨부
-                <input type="file" id="modal-card-file" onchange="handleModalFileUpload(event)">
-                <input type="hidden" id="modal-file-data">
-                <input type="hidden" id="modal-file-name">
-                <input type="hidden" id="modal-file-type">
-                <div id="file-preview" style="font-size: 12px; color: var(--text-sub); margin-top: 4px;"></div>
-            </label>
+    <div class="chat-input-area">
+      <div class="reply-preview-bar" id="reply-preview-bar">
+        <span id="reply-preview-text">~님에게 답장 중</span>
+        <button class="reply-cancel-btn" onclick="cancelReplyMode()">X</button>
+      </div>
 
-            <div class="modal-buttons">
-                <button class="btn-delete" id="modal-delete-btn" onclick="deleteCard()" style="display: none;">삭제</button>
-                <button class="btn-save" onclick="saveCard()">저장</button>
-                <button class="btn-close" onclick="closeModal()">취소</button>
-            </div>
+      <!-- 총 40개의 확장된 이모티콘 피커 -->
+      <div class="emoji-picker-box" id="emoji-picker">
+        <!-- 기본 & 긍정 -->
+        <button type="button" class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('❤️️')">❤️</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('🙏')">🙏</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('✨')">✨</button>
+
+        <!-- 신규 추가: 졸림/자는 모습/우는/땀나는 감정 표현 -->
+        <button type="button" class="emoji-btn" onclick="insertEmoji('😴')">😴</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('🥱')">🥱</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('💤')">💤</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('😭')">😭</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('🥺')">🥺</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('😅')">😅</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('😰')">😰</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('💦')">💦</button>
+
+        <!-- 작업 & 상태 리액션 -->
+        <button type="button" class="emoji-btn" onclick="insertEmoji('✅')">✅</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('💡')">💡</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('🚀')">🚀</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('👌')">👌</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('😎')">😎</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('💯')">💯</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('❓')">❓</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('❗')">❗</button>
+
+        <!-- 원본 이모티콘 28종 구성품 복원 및 기타 -->
+        <button type="button" class="emoji-btn" onclick="insertEmoji('👏')">👏</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('💪')">💪</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('🙌')">🙌</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('🤔')">🤔</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('👀')">👀</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('⚠️')">⚠️</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('📌')">📌</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('📝')">📝</button>
+
+        <!-- 업무 & 상호작용 추가 -->
+        <button type="button" class="emoji-btn" onclick="insertEmoji('📅')">📅</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('☕')">☕</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('😱')">😱</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('😡')">😡</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('💩')">💩</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('🤝')">🤝</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('🙋‍♂️')">🙋‍♂️</button>
+      </div>
+
+      <div class="chat-tools-row">
+        <input type="file" id="chat-file-input" style="display: none;" onchange="handleChatFileUpload(event)">
+        <button type="button" class="attach-btn" onclick="document.getElementById('chat-file-input').click()">첨부</button>
+        <button type="button" class="emoji-toggle-btn" onclick="toggleEmojiPicker(event)">이모티콘</button>
+      </div>
+
+      <div class="chat-input-row">
+        <ul class="mention-dropdown" id="mention-dropdown"></ul>
+        <input type="text" id="chat-input" placeholder="메시지 입력... (@로 멘션, 이미지 복붙 가능)" autocomplete="off">
+        <button id="send-btn">전송</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- 우클릭 컨텍스트 메뉴 -->
+<div class="chat-context-menu" id="chat-context-menu">
+  <div class="context-menu-item" id="ctx-reply">답장 (인용)</div>
+  <div class="context-menu-item" id="ctx-edit">수정</div>
+  <div class="context-menu-item danger" id="ctx-delete">삭제</div>
+</div>
+
+<!-- 카드 상세 모달 -->
+<div class="modal-overlay" id="card-modal">
+  <div class="modal">
+    <h2 id="modal-title">업무 상세 정보</h2>
+    <input type="hidden" id="modal-card-id">
+    <input type="hidden" id="modal-card-status">
+    <label>
+      카드 제목
+      <input type="text" id="modal-card-name" placeholder="제목을 입력하세요">
+    </label>
+    <label>
+      상세 설명
+      <textarea id="modal-card-desc" rows="3" placeholder="상세 내용이나 메모를 입력하세요"></textarea>
+    </label>
+    <label>
+      담당자
+      <input type="text" id="modal-card-assignee" placeholder="담당자 이름">
+    </label>
+    <label>
+      마감일
+      <input type="date" id="modal-card-duedate">
+    </label>
+    <label>
+      파일/이미지 첨부
+      <input type="file" id="modal-card-file" onchange="handleModalFileUpload(event)">
+      <input type="hidden" id="modal-file-data">
+      <input type="hidden" id="modal-file-name">
+      <input type="hidden" id="modal-file-type">
+      <div id="file-preview" style="font-size: 12px; color: var(--text-sub); margin-top: 4px;"></div>
+    </label>
+    <div class="modal-buttons">
+      <button class="btn-delete" id="modal-delete-btn" onclick="deleteCard()" style="display: none;">삭제</button>
+      <button class="btn-save" onclick="saveCard()">저장</button>
+      <button class="btn-close" onclick="closeModal()">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- 로그인 / 회원가입 모달 -->
+<div class="modal-overlay" id="auth-modal" style="display: none;">
+  <div class="modal">
+    <h2 id="auth-title">로그인 / 회원가입</h2>
+    <p style="font-size: 13px; color: var(--text-sub);">닉네임과 비밀번호(숫자 4자리)를 입력하세요.</p>
+    <label>
+      닉네임
+      <input type="text" id="auth-name-input" placeholder="이름 또는 닉네임">
+    </label>
+    <label>
+      비밀번호 (숫자 4자리)
+      <input type="password" id="auth-pin-input" maxlength="4" pattern="\d{4}" placeholder="예: 1234">
+    </label>
+    <div class="modal-buttons">
+      <button class="btn-save" onclick="handleAuthSubmit()">확인 / 시작하기</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, orderBy, serverTimestamp, setDoc, getDoc, arrayUnion, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AlzaSyDfFRk5c_i1K0W04T229N-wcsevrlypE6k",
+  authDomain: "kanban-c32bb.firebaseapp.com",
+  projectId: "kanban-c32bb",
+  storageBucket: "kanban-c32bb.firebasestorage.app",
+  messagingSenderId: "754380153148",
+  appId: "1:754380153148:web:eb4b461fab2d78eb077e39",
+  measurementId: "G-75CQRQV4FH"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 사용자 고유 식별값 (UUID 대체용 세션 키)
+let myUserId = localStorage.getItem('kanban_uid');
+if (!myUserId) {
+  myUserId = 'user_' + Math.random().toString(36).substring(2, 9);
+  localStorage.setItem('kanban_uid', myUserId);
+}
+
+let myName = localStorage.getItem('kanban_username') || "";
+let myPin = localStorage.getItem('kanban_pin') || "";
+let isNotificationMuted = localStorage.getItem('kanban_noti_muted') === 'true';
+let myJoinTimestamp = null;
+let totalOnlineCount = 1;
+let onlineUsersList = [];
+let chatUnsubscribe = null;
+
+let activeReplyTarget = null;
+let contextTargetMsg = null;
+
+const authModal = document.getElementById('auth-modal');
+const authNameInput = document.getElementById('auth-name-input');
+const authPinInput = document.getElementById('auth-pin-input');
+const usernameInput = document.getElementById('username-input');
+
+// 채팅 숨기기/펼치기 토글 함수
+window.toggleChatContainer = function() {
+  const chatContainer = document.getElementById('chat-container');
+  const toggleBtn = document.getElementById('chat-toggle-btn');
+  chatContainer.classList.toggle('collapsed');
+  
+  if (chatContainer.classList.contains('collapsed')) {
+    toggleBtn.innerText = '◀';
+  } else {
+    toggleBtn.innerText = '▶';
+  }
+};
+
+[authNameInput, authPinInput].forEach(input => {
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAuthSubmit();
+    }
+  });
+});
+
+async function autoLogin() {
+  if (myName && myPin) {
+    try {
+      const userRef = doc(db, "users", myName);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists() && userSnap.data().pin === myPin) {
+        myJoinTimestamp = userSnap.data().joinedAt;
+        usernameInput.value = myName;
+        updatePresence();
+        startChatListener();
+        return;
+      }
+    } catch (e) {
+      console.error("Auto login error:", e);
+    }
+  }
+  authNameInput.value = myName;
+  authPinInput.value = "";
+  authModal.style.display = "flex";
+}
+
+autoLogin();
+
+window.handleAuthSubmit = async function() {
+  const inputName = authNameInput.value.trim();
+  const inputPin = authPinInput.value.trim();
+  if (!inputName) {
+    alert("닉네임을 입력해 주세요.");
+    return;
+  }
+  if (!/^\d{4}$/.test(inputPin)) {
+    alert("비밀번호는 숫자 4자리로 입력해 주세요.");
+    return;
+  }
+
+  const userRef = doc(db, "users", inputName);
+  const userSnap = await getDoc(userRef);
+
+  if (userSnap.exists()) {
+    const userData = userSnap.data();
+    if (userData.pin !== inputPin) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+    myJoinTimestamp = userData.joinedAt;
+  } else {
+    myJoinTimestamp = Timestamp.now();
+    await setDoc(userRef, {
+      name: inputName,
+      pin: inputPin,
+      joinedAt: myJoinTimestamp
+    });
+  }
+
+  myName = inputName;
+  myPin = inputPin;
+  localStorage.setItem('kanban_username', myName);
+  localStorage.setItem('kanban_pin', myPin);
+  usernameInput.value = myName;
+  authModal.style.display = "none";
+  updatePresence();
+  startChatListener();
+};
+
+window.handleLogout = function() {
+  if (confirm("로그아웃 하시겠습니까?")) {
+    removePresenceBeacon();
+    localStorage.removeItem('kanban_username');
+    localStorage.removeItem('kanban_pin');
+    location.reload();
+  }
+};
+
+window.promptChangeUser = function() {
+  authNameInput.value = myName;
+  authPinInput.value = "";
+  authModal.style.display = "flex";
+};
+
+async function updatePresence() {
+  if (!myName) return;
+  const userPresenceRef = doc(db, "presence", myUserId);
+  try {
+    await setDoc(userPresenceRef, {
+      name: myName,
+      lastSeen: serverTimestamp()
+    }, { merge: true });
+  } catch (e) {
+    console.error("Presence update error:", e);
+  }
+}
+
+function removePresenceBeacon() {
+  const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/presence/${myUserId}`;
+  navigator.sendBeacon(url + "?method=DELETE");
+}
+
+setInterval(updatePresence, 10000);
+window.addEventListener('pagehide', removePresenceBeacon);
+window.addEventListener('beforeunload', removePresenceBeacon);
+
+onSnapshot(collection(db, "presence"), (snapshot) => {
+  const now = Date.now();
+  const activeUsers = [];
+  snapshot.forEach((d) => {
+    const data = d.data();
+    if (data.lastSeen) {
+      const lastSeenTime = data.lastSeen.toDate ? data.lastSeen.toDate().getTime() : now;
+      if (now - lastSeenTime < 30000) {
+        activeUsers.push(data.name || "익명");
+      }
+    }
+  });
+  onlineUsersList = activeUsers;
+  totalOnlineCount = Math.max(1, activeUsers.length);
+  document.getElementById('online-count-display').innerText = `${totalOnlineCount}명`;
+  const listEl = document.getElementById('online-users-list');
+  if (listEl) {
+    listEl.innerHTML = activeUsers.map(name => `<li class="online-user-item">${name}</li>`).join('');
+  }
+});
+
+window.toggleOnlineUsersPopover = function(event) {
+  event.stopPropagation();
+  document.getElementById('online-users-popover').classList.toggle('active');
+};
+
+function isUserAway() {
+  return document.hidden || !document.hasFocus();
+}
+
+function triggerDesktopNotification(title, body, isForceMention = false) {
+  if (isNotificationMuted && !isForceMention) return;
+  try {
+    if ("Notification" in window && Notification.permission === "granted") {
+      const instance = new Notification(title, {
+        body: body,
+        icon: 'https://www.lgchem.com/favicon.ico'
+      });
+      instance.onclick = function() {
+        window.focus();
+        instance.close();
+      };
+      setTimeout(() => instance.close(), 6000);
+    }
+  } catch (e) {
+    console.log("알림 출력 제한:", e);
+  }
+}
+
+function updateNotiButtonUI() {
+  const btn = document.getElementById('noti-toggle-btn');
+  if (!("Notification" in window)) {
+    btn.innerText = "알림 미지원";
+    return;
+  }
+  if (Notification.permission === "denied") {
+    btn.innerText = "알림 차단됨";
+    btn.style.color = "#EF4444";
+  } else if (Notification.permission === "granted") {
+    if (isNotificationMuted) {
+      btn.innerText = "알림 끔 (Mute)";
+      btn.style.color = "#6C757D";
+    } else {
+      btn.innerText = "알림 켜짐";
+      btn.style.color = "#22C55E";
+    }
+  } else {
+    btn.innerText = "알림 권한 설정";
+    btn.style.color = "#475569";
+  }
+}
+
+window.toggleNotificationSetting = function() {
+  if (!("Notification" in window)) {
+    alert("이 브라우저는 데스크톱 알림을 지원하지 않습니다.");
+    return;
+  }
+  if (Notification.permission === "granted") {
+    isNotificationMuted = !isNotificationMuted;
+    localStorage.setItem('kanban_noti_muted', isNotificationMuted);
+    updateNotiButtonUI();
+    if (!isNotificationMuted) {
+      triggerDesktopNotification("알림 활성화", "페이지 밖으로 나갔을 때 알림을 수신합니다.");
+    }
+  } else if (Notification.permission === "denied") {
+    alert("주소창 좌측의 '사이트 설정'에서 알림 권한을 '허용'으로 변경해주세요.");
+  } else {
+    Notification.requestPermission().then((permission) => {
+      if (permission === "granted") {
+        isNotificationMuted = false;
+        localStorage.setItem('kanban_noti_muted', 'false');
+        triggerDesktopNotification("알림 권한 설정 완료", "페이지 밖으로 나갔을 때만 알림이 전송됩니다.");
+      }
+      updateNotiButtonUI();
+    });
+  }
+};
+updateNotiButtonUI();
+
+window.toggleEmojiPicker = function(event) {
+  event.stopPropagation();
+  document.getElementById('emoji-picker').classList.toggle('active');
+};
+
+window.insertEmoji = function(emoji) {
+  const chatInput = document.getElementById('chat-input');
+  chatInput.value += emoji;
+  chatInput.focus();
+  document.getElementById('emoji-picker').classList.remove('active');
+};
+
+const chatInput = document.getElementById('chat-input');
+const mentionDropdown = document.getElementById('mention-dropdown');
+
+// 이미지 클립보드 붙여넣기(Paste) 기능
+chatInput.addEventListener('paste', (e) => {
+  const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+  for (let index = 0; index < items.length; index++) {
+    const item = items[index];
+    if (item.type.indexOf('image') !== -1) {
+      const file = item.getAsFile();
+      if (!file) continue;
+
+      if (file.size > 1024 * 1024 * 3) {
+        alert("붙여넣은 이미지 크기는 최대 3MB까지 가능합니다.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        sendMessage({
+          data: evt.target.result,
+          name: file.name || `pasted-image-${Date.now()}.png`,
+          type: file.type
+        });
+      };
+      reader.readAsDataURL(file);
+      e.preventDefault();
+      break;
+    }
+  }
+});
+
+chatInput.addEventListener('input', (e) => {
+  const value = chatInput.value;
+  const cursorPosition = chatInput.selectionStart;
+  const textBeforeCursor = value.substring(0, cursorPosition);
+  const mentionMatch = textBeforeCursor.match(/@([^ ]*)$/);
+  if (mentionMatch) {
+    const queryStr = mentionMatch[1].toLowerCase();
+    const filteredUsers = onlineUsersList.filter(name => name !== myName && name.toLowerCase().includes(queryStr));
+    if (filteredUsers.length > 0) {
+      mentionDropdown.innerHTML = filteredUsers.map(name => `<li class="mention-dropdown-item" onclick="selectMention('${name}')">@${name}</li>`).join('');
+      mentionDropdown.classList.add('active');
+    } else {
+      mentionDropdown.classList.remove('active');
+    }
+  } else {
+    mentionDropdown.classList.remove('active');
+  }
+});
+
+window.selectMention = function(name) {
+  const value = chatInput.value;
+  const cursorPosition = chatInput.selectionStart;
+  const textBeforeCursor = value.substring(0, cursorPosition);
+  const textAfterCursor = value.substring(cursorPosition);
+  const newTextBefore = textBeforeCursor.replace(/@([^ ]*)$/, `@${name} `);
+  chatInput.value = newTextBefore + textAfterCursor;
+  mentionDropdown.classList.remove('active');
+  chatInput.focus();
+};
+
+const contextMenu = document.getElementById('chat-context-menu');
+const ctxReply = document.getElementById('ctx-reply');
+const ctxEdit = document.getElementById('ctx-edit');
+const ctxDelete = document.getElementById('ctx-delete');
+
+function hideContextMenu() {
+  contextMenu.classList.remove('active');
+  contextTargetMsg = null;
+}
+
+ctxReply.addEventListener('click', () => {
+  if (contextTargetMsg) {
+    setReplyTarget(contextTargetMsg.sender, contextTargetMsg.text);
+  }
+  hideContextMenu();
+});
+
+ctxEdit.addEventListener('click', () => {
+  if (contextTargetMsg && contextTargetMsg.isMe) {
+    editMessage(contextTargetMsg.id, contextTargetMsg.text);
+  }
+  hideContextMenu();
+});
+
+ctxDelete.addEventListener('click', () => {
+  if (contextTargetMsg && contextTargetMsg.isMe) {
+    deleteMessage(contextTargetMsg.id);
+  }
+  hideContextMenu();
+});
+
+document.addEventListener('click', (e) => {
+  hideContextMenu();
+  const emojiPicker = document.getElementById('emoji-picker');
+  if (emojiPicker && emojiPicker.classList.contains('active') && !emojiPicker.contains(e.target)) {
+    emojiPicker.classList.remove('active');
+  }
+  const usersPopover = document.getElementById('online-users-popover');
+  if (usersPopover && usersPopover.classList.contains('active') && !usersPopover.contains(e.target)) {
+    usersPopover.classList.remove('active');
+  }
+  if (mentionDropdown && !mentionDropdown.contains(e.target) && e.target !== chatInput) {
+    mentionDropdown.classList.remove('active');
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    hideContextMenu();
+  }
+});
+
+function formatMessageText(text) {
+  if (!text) return "";
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
+  let formatted = text.replace(urlRegex, (url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+  });
+  const mentionRegex = /@([^\s]+)/g;
+  formatted = formatted.replace(mentionRegex, '<span class="mention-tag">@$1</span>');
+  return formatted;
+}
+
+function formatTime(timestamp) {
+  if (!timestamp) return "";
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  let hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? '오후' : '오전';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  return `${ampm} ${hours}:${minutes}`;
+}
+
+window.setReplyTarget = function(sender, text) {
+  activeReplyTarget = { sender, text };
+  const previewBar = document.getElementById('reply-preview-bar');
+  const previewText = document.getElementById('reply-preview-text');
+  previewText.innerText = `${sender}님에게 답장: "${text.substring(0, 20)}${text.length > 20 ? '...' : ''}"`;
+  previewBar.classList.add('active');
+  chatInput.focus();
+};
+
+window.cancelReplyMode = function() {
+  activeReplyTarget = null;
+  document.getElementById('reply-preview-bar').classList.remove('active');
+};
+
+async function deleteMessage(msgId) {
+  if (confirm("이 메시지를 삭제하시겠습니까?")) {
+    try {
+      await deleteDoc(doc(db, "messages", msgId));
+    } catch (e) {
+      alert("삭제 실패: " + e.message);
+    }
+  }
+}
+
+async function editMessage(msgId, currentText) {
+  const newText = prompt("메시지를 수정하세요:", currentText);
+  if (newText !== null && newText.trim() !== "" && newText !== currentText) {
+    try {
+      await updateDoc(doc(db, "messages", msgId), {
+        text: newText.trim(),
+        isEdited: true
+      });
+    } catch (e) {
+      alert("수정 실패: " + e.message);
+    }
+  }
+}
+
+const sendBtn = document.getElementById('send-btn');
+const chatMessages = document.getElementById('chat-messages');
+
+async function sendMessage(filePayload = null) {
+  if (!myName) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
+  const text = chatInput.value.trim();
+  if (text === "" && !filePayload) return;
+
+  chatInput.value = "";
+  mentionDropdown.classList.remove('active');
+  document.getElementById('emoji-picker').classList.remove('active');
+
+  try {
+    const msgData = {
+      sender: myName,
+      text: text,
+      readBy: [myUserId],
+      targetTotal: totalOnlineCount,
+      createdAt: serverTimestamp()
+    };
+    if (activeReplyTarget) {
+      msgData.replyTo = activeReplyTarget;
+      cancelReplyMode();
+    }
+    if (filePayload) {
+      msgData.fileData = filePayload.data;
+      msgData.fileName = filePayload.name;
+      msgData.fileType = filePayload.type;
+    }
+    await addDoc(collection(db, "messages"), msgData);
+  } catch (error) {
+    console.error("전송 오류:", error);
+  }
+}
+
+sendBtn.addEventListener('click', () => sendMessage());
+chatInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.isComposing) {
+    if (mentionDropdown.classList.contains('active')) {
+      const firstItem = mentionDropdown.querySelector('.mention-dropdown-item');
+      if (firstItem) {
+        firstItem.click();
+        e.preventDefault();
+        return;
+      }
+    }
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+window.handleChatFileUpload = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.size > 1024 * 1024 * 3) {
+    alert("파일 크기는 최대 3MB까지 첨부 가능합니다.");
+    event.target.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    sendMessage({
+      data: e.target.result,
+      name: file.name,
+      type: file.type
+    });
+  };
+  event.target.value = "";
+  reader.readAsDataURL(file);
+};
+
+function startChatListener() {
+  if (chatUnsubscribe) chatUnsubscribe();
+  let isFirstChatLoad = true;
+  const qChat = query(
+    collection(db, "messages"),
+    where("createdAt", ">=", myJoinTimestamp),
+    orderBy("createdAt", "asc")
+  );
+
+  chatUnsubscribe = onSnapshot(qChat, (snapshot) => {
+    chatMessages.innerHTML = '<div class="message"><strong>알림:</strong> 채팅방에 연결되었습니다.</div>';
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === "added" && !isFirstChatLoad) {
+        const newMsg = change.doc.data();
+        const isMentioned = newMsg.text && newMsg.text.includes(`@${myName}`);
+        if (newMsg.sender !== myName) {
+          if (isMentioned) {
+            triggerDesktopNotification(`${newMsg.sender}님이 나를 언급했습니다!`, newMsg.text, true);
+          } else if (isUserAway()) {
+            const notifyText = newMsg.text || (newMsg.fileName ? `[파일 첨부] ${newMsg.fileName}` : "새 메시지가 도착했습니다.");
+            triggerDesktopNotification(`${newMsg.sender}님의 메시지`, notifyText, false);
+          }
+        }
+      }
+    });
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const msgId = docSnap.id;
+      const readByList = data.readBy || [];
+
+      if (!readByList.includes(myUserId)) {
+        updateDoc(doc(db, "messages", msgId), {
+          readBy: arrayUnion(myUserId)
+        }).catch(() => {});
+      }
+
+      const msgWrapper = document.createElement('div');
+      const isMe = data.sender === myName;
+      const isMentioned = data.text && data.text.includes(`@${myName}`);
+      msgWrapper.className = isMe ? 'msg-wrapper my-msg-wrapper' : 'msg-wrapper';
+
+      let senderHTML = isMe ? '' : `<div class="msg-sender">${data.sender}</div>`;
+      let fileHTML = '';
+      const targetTotal = data.targetTotal || Math.max(totalOnlineCount, readByList.length);
+      const unreadCount = Math.max(0, targetTotal - readByList.length);
+      const unreadHTML = unreadCount > 0 ? `<span class="unread-count">${unreadCount}</span>` : '';
+      let timeHTML = data.createdAt ? `<span class="msg-time">${formatTime(data.createdAt)}</span>` : '';
+
+      if (data.fileData) {
+        if (data.fileType && data.fileType.startsWith('image/')) {
+          fileHTML = `<br><img src="${data.fileData}" class="chat-file-img" alt="첨부 이미지">`;
+        } else {
+          fileHTML = `<br><a href="${data.fileData}" download="${data.fileName}" class="chat-file-link">${data.fileName}</a>`;
+        }
+      }
+
+      let quoteHTML = '';
+      if (data.replyTo) {
+        quoteHTML = `
+          <div class="reply-quote-box">
+            <span class="reply-sender-label">${data.replyTo.sender}님에게 답장</span>
+            ${formatMessageText(data.replyTo.text)}
+          </div>
+        `;
+      }
+
+      const contentHTML = formatMessageText(data.text || "");
+      const messageClass = isMentioned ? "message mentioned-message" : "message";
+      const editedHTML = data.isEdited ? '<span class="edited-tag">(수정됨)</span>' : '';
+
+      msgWrapper.innerHTML = `
+        ${senderHTML}
+        <div class="msg-content-row">
+          <div class="${messageClass}">
+            ${quoteHTML}
+            ${contentHTML}
+            ${editedHTML}
+            ${fileHTML}
+          </div>
+          <div class="msg-info-column">
+            ${unreadHTML}
+            ${timeHTML}
+          </div>
         </div>
-    </div>
+      `;
 
-    <!-- 비밀번호/가입 모달 -->
-    <div class="modal-overlay" id="auth-modal" style="display: none;">
-        <div class="modal">
-            <h2 id="auth-title">로그인 / 회원가입</h2>
-            <p style="font-size: 13px; color: var(--text-sub);">닉네임과 비밀번호(숫자 4자리)를 입력하세요.</p>
-            <label>
-                닉네임
-                <input type="text" id="auth-name-input" placeholder="이름 또는 닉네임">
-            </label>
-            <label>
-                비밀번호 (숫자 4자리)
-                <input type="password" id="auth-pin-input" maxlength="4" pattern="\d{4}" placeholder="예: 1234">
-            </label>
-            <div class="modal-buttons">
-                <button class="btn-save" onclick="handleAuthSubmit()">확인 / 시작하기</button>
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, orderBy, serverTimestamp, setDoc, getDoc, arrayUnion, Timestamp } 
-          from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-          apiKey: "AIzaSyDfFRk5c_i1K0W04T229N-wcsevrIypE6k",
-          authDomain: "kanban-c32bb.firebaseapp.com",
-          projectId: "kanban-c32bb",
-          storageBucket: "kanban-c32bb.firebasestorage.app",
-          messagingSenderId: "754380153148",
-          appId: "1:754380153148:web:eb4b461fab2d78eb077e39",
-          measurementId: "G-75CQRQV4FH"
+      const msgBubble = msgWrapper.querySelector('.message');
+      msgBubble.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        contextTargetMsg = {
+          id: msgId,
+          text: data.text || "",
+          sender: data.sender,
+          isMe: isMe
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        let myUserId = localStorage.getItem('kanban_uid');
-        if (!myUserId) {
-            myUserId = 'user_' + Math.random().toString(36).substring(2, 9);
-            localStorage.setItem('kanban_uid', myUserId);
+        if (isMe) {
+          ctxEdit.style.display = 'flex';
+          ctxDelete.style.display = 'flex';
+        } else {
+          ctxEdit.style.display = 'none';
+          ctxDelete.style.display = 'none';
         }
 
-        let myName = localStorage.getItem('kanban_username') || "";
-        let myPin = localStorage.getItem('kanban_pin') || "";
-        let isNotificationMuted = localStorage.getItem('kanban_noti_muted') === 'true';
-        let myJoinTimestamp = null;
-        let totalOnlineCount = 1;
-        let onlineUsersList = [];
-        let chatUnsubscribe = null;
-
-        // 답장 및 컨텍스트 선택 대상 변수
-        let activeReplyTarget = null;
-        let contextTargetMsg = null;
-
-        const authModal = document.getElementById('auth-modal');
-        const authNameInput = document.getElementById('auth-name-input');
-        const authPinInput = document.getElementById('auth-pin-input');
-        const usernameInput = document.getElementById('username-input');
-
-        [authNameInput, authPinInput].forEach(input => {
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAuthSubmit();
-                }
-            });
-        });
-
-        async function autoLogin() {
-            if (myName && myPin) {
-                const userRef = doc(db, "users", myName);
-                const userSnap = await getDoc(userRef);
-
-                if (userSnap.exists() && userSnap.data().pin === myPin) {
-                    myJoinTimestamp = userSnap.data().joinedAt;
-                    usernameInput.value = myName;
-                    updatePresence();
-                    startChatListener();
-                    return;
-                }
-            }
-            authNameInput.value = myName;
-            authPinInput.value = "";
-            authModal.style.display = "flex";
-        }
-
-        autoLogin();
-
-        window.handleAuthSubmit = async function() {
-            const inputName = authNameInput.value.trim();
-            const inputPin = authPinInput.value.trim();
-
-            if (!inputName) {
-                alert("닉네임을 입력해 주세요.");
-                return;
-            }
-
-            if (!/^\d{4}$/.test(inputPin)) {
-                alert("비밀번호는 숫자 4자리로 입력해 주세요.");
-                return;
-            }
-
-            const userRef = doc(db, "users", inputName);
-            const userSnap = await getDoc(userRef);
-
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                if (userData.pin !== inputPin) {
-                    alert("비밀번호가 일치하지 않습니다.");
-                    return;
-                }
-                myJoinTimestamp = userData.joinedAt;
-            } else {
-                myJoinTimestamp = Timestamp.now();
-                await setDoc(userRef, {
-                    name: inputName,
-                    pin: inputPin,
-                    joinedAt: myJoinTimestamp
-                });
-            }
-
-            myName = inputName;
-            myPin = inputPin;
-            localStorage.setItem('kanban_username', myName);
-            localStorage.setItem('kanban_pin', myPin);
-            
-            usernameInput.value = myName;
-            authModal.style.display = "none";
-
-            updatePresence();
-            startChatListener();
-        };
-
-        window.handleLogout = function() {
-            if (confirm("로그아웃 하시겠습니까?")) {
-                removePresenceBeacon();
-                localStorage.removeItem('kanban_username');
-                localStorage.removeItem('kanban_pin');
-                location.reload();
-            }
-        };
-
-        window.promptChangeUser = function() {
-            authNameInput.value = myName;
-            authPinInput.value = "";
-            authModal.style.display = "flex";
-        };
-
-        async function updatePresence() {
-            if (!myName) return;
-            const userPresenceRef = doc(db, "presence", myUserId);
-            try {
-                await setDoc(userPresenceRef, {
-                    name: myName,
-                    lastSeen: serverTimestamp()
-                }, { merge: true });
-            } catch (e) {
-                console.error("Presence update error:", e);
-            }
-        }
-
-        function removePresenceBeacon() {
-            const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/presence/${myUserId}`;
-            navigator.sendBeacon(url + "?method=DELETE");
-        }
-
-        setInterval(updatePresence, 10000);
-        window.addEventListener('pagehide', removePresenceBeacon);
-        window.addEventListener('beforeunload', removePresenceBeacon);
-
-        onSnapshot(collection(db, "presence"), (snapshot) => {
-            const now = Date.now();
-            const activeUsers = [];
-
-            snapshot.forEach((d) => {
-                const data = d.data();
-                if (data.lastSeen) {
-                    const lastSeenTime = data.lastSeen.toDate ? data.lastSeen.toDate().getTime() : now;
-                    if (now - lastSeenTime < 25000) {
-                        activeUsers.push(data.name || "익명");
-                    }
-                }
-            });
-
-            onlineUsersList = activeUsers;
-            totalOnlineCount = Math.max(1, activeUsers.length);
-            document.getElementById('online-count-display').innerText = `${totalOnlineCount}명`;
-
-            const listEl = document.getElementById('online-users-list');
-            if (listEl) {
-                listEl.innerHTML = activeUsers.map(name => `<li class="online-user-item">${name}</li>`).join('');
-            }
-        });
-
-        window.toggleOnlineUsersPopover = function(event) {
-            event.stopPropagation();
-            document.getElementById('online-users-popover').classList.toggle('active');
-        };
-
-        function isUserAway() {
-            return document.hidden || !document.hasFocus();
-        }
-
-        function triggerDesktopNotification(title, body, isForceMention = false) {
-            if (isNotificationMuted && !isForceMention) return; 
-
-            try {
-                if ("Notification" in window && Notification.permission === "granted") {
-                    const instance = new Notification(title, {
-                        body: body,
-                        icon: 'https://www.lgchem.com/favicon.ico'
-                    });
-                    instance.onclick = function() {
-                        window.focus();
-                        instance.close();
-                    };
-                    setTimeout(() => instance.close(), 6000);
-                }
-            } catch (e) {
-                console.log("알림 출력 제한:", e);
-            }
-        }
-
-        function updateNotiButtonUI() {
-            const btn = document.getElementById('noti-toggle-btn');
-            if (!("Notification" in window)) {
-                btn.innerText = "🔕 알림 미지원";
-                return;
-            }
-
-            if (Notification.permission === "denied") {
-                btn.innerText = "🔕 알림 차단됨";
-                btn.style.color = "#EF4444";
-            } else if (Notification.permission === "granted") {
-                if (isNotificationMuted) {
-                    btn.innerText = "🔕 알림 끔 (Mute)";
-                    btn.style.color = "#6C757D";
-                } else {
-                    btn.innerText = "🔔 알림 켜짐";
-                    btn.style.color = "#22C55E";
-                }
-            } else {
-                btn.innerText = "🔔 알림 권한 설정";
-                btn.style.color = "#475569";
-            }
-        }
-
-        window.toggleNotificationSetting = function() {
-            if (!("Notification" in window)) {
-                alert("이 브라우저는 데스크톱 알림을 지원하지 않습니다.");
-                return;
-            }
-
-            if (Notification.permission === "granted") {
-                isNotificationMuted = !isNotificationMuted;
-                localStorage.setItem('kanban_noti_muted', isNotificationMuted);
-                updateNotiButtonUI();
-                
-                if (!isNotificationMuted) {
-                    triggerDesktopNotification("알림 활성화", "페이지 밖으로 나갔을 때 알림을 수신합니다.");
-                }
-            } else if (Notification.permission === "denied") {
-                alert("주소창 좌측의 '🔒 사이트 설정'에서 알림 권한을 '허용'으로 변경해주세요.");
-            } else {
-                Notification.requestPermission().then((permission) => {
-                    if (permission === "granted") {
-                        isNotificationMuted = false;
-                        localStorage.setItem('kanban_noti_muted', 'false');
-                        triggerDesktopNotification("알림 권한 설정 완료", "페이지 밖으로 나갔을 때만 알림이 전송됩니다.");
-                    }
-                    updateNotiButtonUI();
-                });
-            }
-        };
-
-        updateNotiButtonUI();
-
-        window.toggleEmojiPicker = function(event) {
-            event.stopPropagation();
-            document.getElementById('emoji-picker').classList.toggle('active');
-        };
-
-        window.insertEmoji = function(emoji) {
-            const chatInput = document.getElementById('chat-input');
-            chatInput.value += emoji;
-            chatInput.focus();
-            document.getElementById('emoji-picker').classList.remove('active');
-        };
-
-        const chatInput = document.getElementById('chat-input');
-        const mentionDropdown = document.getElementById('mention-dropdown');
-
-        chatInput.addEventListener('input', (e) => {
-            const value = chatInput.value;
-            const cursorPosition = chatInput.selectionStart;
-            const textBeforeCursor = value.substring(0, cursorPosition);
-            const mentionMatch = textBeforeCursor.match(/@([^\s]*)$/);
-
-            if (mentionMatch) {
-                const queryStr = mentionMatch[1].toLowerCase();
-                const filteredUsers = onlineUsersList.filter(name => name !== myName && name.toLowerCase().includes(queryStr));
-                
-                if (filteredUsers.length > 0) {
-                    mentionDropdown.innerHTML = filteredUsers.map(name => `<li class="mention-dropdown-item" onclick="selectMention('${name}')">@${name}</li>`).join('');
-                    mentionDropdown.classList.add('active');
-                } else {
-                    mentionDropdown.classList.remove('active');
-                }
-            } else {
-                mentionDropdown.classList.remove('active');
-            }
-        });
-
-        window.selectMention = function(name) {
-            const value = chatInput.value;
-            const cursorPosition = chatInput.selectionStart;
-            const textBeforeCursor = value.substring(0, cursorPosition);
-            const textAfterCursor = value.substring(cursorPosition);
-            
-            const newTextBefore = textBeforeCursor.replace(/@([^\s]*)$/, `@${name} `);
-            chatInput.value = newTextBefore + textAfterCursor;
-            mentionDropdown.classList.remove('active');
-            chatInput.focus();
-        };
-
-        /* ---------------- 컨텍스트 메뉴 및 이벤트 핸들러 ---------------- */
-
-        const contextMenu = document.getElementById('chat-context-menu');
-        const ctxReply = document.getElementById('ctx-reply');
-        const ctxEdit = document.getElementById('ctx-edit');
-        const ctxDelete = document.getElementById('ctx-delete');
-
-        function hideContextMenu() {
-            contextMenu.classList.remove('active');
-            contextTargetMsg = null;
-        }
-
-        ctxReply.addEventListener('click', () => {
-            if (contextTargetMsg) {
-                setReplyTarget(contextTargetMsg.sender, contextTargetMsg.text);
-            }
-            hideContextMenu();
-        });
-
-        ctxEdit.addEventListener('click', () => {
-            if (contextTargetMsg && contextTargetMsg.isMe) {
-                editMessage(contextTargetMsg.id, contextTargetMsg.text);
-            }
-            hideContextMenu();
-        });
-
-        ctxDelete.addEventListener('click', () => {
-            if (contextTargetMsg && contextTargetMsg.isMe) {
-                deleteMessage(contextTargetMsg.id);
-            }
-            hideContextMenu();
-        });
-
-        document.addEventListener('click', (e) => {
-            hideContextMenu();
-
-            const emojiPicker = document.getElementById('emoji-picker');
-            if (emojiPicker && emojiPicker.classList.contains('active') && !emojiPicker.contains(e.target)) {
-                emojiPicker.classList.remove('active');
-            }
-
-            const usersPopover = document.getElementById('online-users-popover');
-            if (usersPopover && usersPopover.classList.contains('active') && !usersPopover.contains(e.target)) {
-                usersPopover.classList.remove('active');
-            }
-
-            if (mentionDropdown && !mentionDropdown.contains(e.target) && e.target !== chatInput) {
-                mentionDropdown.classList.remove('active');
-            }
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                hideContextMenu();
-            }
-        });
-
-        /* ---------------------------------------------------------------------- */
-
-        function formatMessageText(text) {
-            if (!text) return "";
-            const urlRegex = /(https?:\/\/[^\s<]+)/g;
-            let formatted = text.replace(urlRegex, (url) => {
-                return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-            });
-            
-            const mentionRegex = /@([^\s]+)/g;
-            formatted = formatted.replace(mentionRegex, `<span class="mention-tag">@$1</span>`);
-
-            return formatted;
-        }
-
-        function formatTime(timestamp) {
-            if (!timestamp) return "";
-            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            let hours = date.getHours();
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? '오후' : '오전';
-            hours = hours % 12;
-            hours = hours ? hours : 12;
-            return `${ampm} ${hours}:${minutes}`;
-        }
-
-        window.setReplyTarget = function(sender, text) {
-            activeReplyTarget = { sender, text };
-            const previewBar = document.getElementById('reply-preview-bar');
-            const previewText = document.getElementById('reply-preview-text');
-            previewText.innerText = `💬 ${sender}님에게 답장: "${text.substring(0, 20)}${text.length > 20 ? '...' : ''}"`;
-            previewBar.classList.add('active');
-            chatInput.focus();
-        };
-
-        window.cancelReplyMode = function() {
-            activeReplyTarget = null;
-            document.getElementById('reply-preview-bar').classList.remove('active');
-        };
-
-        async function deleteMessage(msgId) {
-            if (confirm("이 메시지를 삭제하시겠습니까?")) {
-                try {
-                    await deleteDoc(doc(db, "messages", msgId));
-                } catch (e) {
-                    alert("삭제 실패: " + e.message);
-                }
-            }
-        }
-
-        async function editMessage(msgId, currentText) {
-            const newText = prompt("메시지를 수정하세요:", currentText);
-            if (newText !== null && newText.trim() !== "" && newText !== currentText) {
-                try {
-                    await updateDoc(doc(db, "messages", msgId), {
-                        text: newText.trim(),
-                        isEdited: true
-                    });
-                } catch (e) {
-                    alert("수정 실패: " + e.message);
-                }
-            }
-        }
-
-        const sendBtn = document.getElementById('send-btn');
-        const chatMessages = document.getElementById('chat-messages');
-
-        async function sendMessage(filePayload = null) {
-          if (!myName) {
-            alert("로그인이 필요합니다.");
-            return;
-          }
-
-          const text = chatInput.value.trim();
-          if (text === "" && !filePayload) return;
-
-          chatInput.value = "";
-          mentionDropdown.classList.remove('active');
-          document.getElementById('emoji-picker').classList.remove('active');
-
-          try {
-            const msgData = {
-              sender: myName,
-              text: text,
-              readBy: [myUserId],
-              targetTotal: totalOnlineCount,
-              createdAt: serverTimestamp()
-            };
-
-            if (activeReplyTarget) {
-                msgData.replyTo = activeReplyTarget;
-                cancelReplyMode();
-            }
-
-            if (filePayload) {
-              msgData.fileData = filePayload.data;
-              msgData.fileName = filePayload.name;
-              msgData.fileType = filePayload.type;
-            }
-
-            await addDoc(collection(db, "messages"), msgData);
-          } catch (error) {
-            console.error("전송 오류:", error);
-          }
-        }
-
-        sendBtn.addEventListener('click', () => sendMessage());
-        chatInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' && !e.isComposing) {
-            if (mentionDropdown.classList.contains('active')) {
-                const firstItem = mentionDropdown.querySelector('.mention-dropdown-item');
-                if (firstItem) {
-                    firstItem.click();
-                    e.preventDefault();
-                    return;
-                }
-            }
-            e.preventDefault();
-            sendMessage();
-          }
-        });
-
-        window.handleChatFileUpload = function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            if (file.size > 1024 * 1024 * 3) {
-                alert("파일 크기는 최대 3MB까지 첨부 가능합니다.");
-                event.target.value = "";
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                sendMessage({
-                    data: e.target.result,
-                    name: file.name,
-                    type: file.type
-                });
-                event.target.value = "";
-            };
-            reader.readAsDataURL(file);
-        };
-
-        function startChatListener() {
-            if (chatUnsubscribe) chatUnsubscribe();
-
-            let isFirstChatLoad = true;
-            const qChat = query(
-                collection(db, "messages"), 
-                where("createdAt", ">=", myJoinTimestamp),
-                orderBy("createdAt", "asc")
-            );
-
-            chatUnsubscribe = onSnapshot(qChat, (snapshot) => {
-              chatMessages.innerHTML = '<div class="message"><strong>알림:</strong> 채팅방에 연결되었습니다.</div>';
-              
-              snapshot.docChanges().forEach((change) => {
-                if (change.type === "added" && !isFirstChatLoad) {
-                    const newMsg = change.doc.data();
-                    const isMentioned = newMsg.text && newMsg.text.includes(`@${myName}`);
-
-                    if (newMsg.sender !== myName) {
-                        if (isMentioned) {
-                            triggerDesktopNotification(`📣 ${newMsg.sender}님이 나를 언급했습니다!`, newMsg.text, true);
-                        } else if (isUserAway()) {
-                            const notifyText = newMsg.text || (newMsg.fileName ? `[파일 첨부] ${newMsg.fileName}` : "새 메시지가 도착했습니다.");
-                            triggerDesktopNotification(`💬 ${newMsg.sender}님의 메시지`, notifyText, false);
-                        }
-                    }
-                }
-              });
-
-              snapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                const msgId = docSnap.id;
-                
-                const readByList = data.readBy || [];
-                if (!readByList.includes(myUserId)) {
-                    updateDoc(doc(db, "messages", msgId), {
-                        readBy: arrayUnion(myUserId)
-                    }).catch(() => {});
-                }
-
-                const msgWrapper = document.createElement('div');
-                const isMe = data.sender === myName;
-                const isMentioned = data.text && data.text.includes(`@${myName}`);
-                
-                msgWrapper.className = isMe ? 'msg-wrapper my-msg-wrapper' : 'msg-wrapper';
-
-                let senderHTML = isMe ? '' : `<div class="msg-sender">${data.sender}</div>`;
-                let fileHTML = '';
-                
-                const targetTotal = data.targetTotal || Math.max(totalOnlineCount, readByList.length);
-                const unreadCount = Math.max(0, targetTotal - readByList.length);
-                const unreadHTML = unreadCount > 0 ? `<span class="unread-count">${unreadCount}</span>` : '';
-                
-                let timeHTML = data.createdAt ? `<span class="msg-time">${formatTime(data.createdAt)}</span>` : '';
-
-                if (data.fileData) {
-                    if (data.fileType && data.fileType.startsWith('image/')) {
-                        fileHTML = `<br><img src="${data.fileData}" class="chat-file-img" alt="첨부 이미지">`;
-                    } else {
-                        fileHTML = `<br><a href="${data.fileData}" download="${data.fileName}" class="chat-file-link">💾 ${data.fileName}</a>`;
-                    }
-                }
-
-                // 인용 답장 표현
-                let quoteHTML = '';
-                if (data.replyTo) {
-                    quoteHTML = `
-                        <div class="reply-quote-box">
-                            <span class="reply-sender-label">↩️ ${data.replyTo.sender}님에게 답장</span>
-                            ${formatMessageText(data.replyTo.text)}
-                        </div>
-                    `;
-                }
-
-                const contentHTML = formatMessageText(data.text || "");
-                const messageClass = isMentioned ? "message mentioned-message" : "message";
-                const editedHTML = data.isEdited ? `<span class="edited-tag">(수정됨)</span>` : '';
-
-                msgWrapper.innerHTML = `
-                    ${senderHTML}
-                    <div class="msg-content-row">
-                        <div class="${messageClass}">
-                            ${quoteHTML}
-                            ${contentHTML}
-                            ${editedHTML}
-                            ${fileHTML}
-                        </div>
-                        <div class="msg-info-column">
-                            ${unreadHTML}
-                            ${timeHTML}
-                        </div>
-                    </div>
-                `;
-
-                // 우클릭 이벤트 리스너 바인딩
-                const msgBubble = msgWrapper.querySelector('.message');
-                msgBubble.addEventListener('contextmenu', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    contextTargetMsg = {
-                        id: msgId,
-                        text: data.text || "",
-                        sender: data.sender,
-                        isMe: isMe
-                    };
-
-                    // 메뉴 항목 표시 권한 제어
-                    if (isMe) {
-                        ctxEdit.style.display = 'flex';
-                        ctxDelete.style.display = 'flex';
-                    } else {
-                        ctxEdit.style.display = 'none';
-                        ctxDelete.style.display = 'none';
-                    }
-
-                    // 클릭한 위치에 메뉴 띄우기
-                    contextMenu.style.top = `${e.clientY}px`;
-                    contextMenu.style.left = `${e.clientX}px`;
-                    contextMenu.classList.add('active');
-                });
-
-                chatMessages.appendChild(msgWrapper);
-              });
-
-              isFirstChatLoad = false;
-              chatMessages.scrollTop = chatMessages.scrollHeight;
-            });
-        }
-
-        const cardsData = {};
-
-        window.handleModalFileUpload = function(event) {
-            const file = event.target.files[0];
-            const preview = document.getElementById('file-preview');
-            if (!file) return;
-
-            if (file.size > 1024 * 1024 * 3) {
-                alert("파일 크기는 최대 3MB까지 첨부 가능합니다.");
-                event.target.value = "";
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('modal-file-data').value = e.target.result;
-                document.getElementById('modal-file-name').value = file.name;
-                document.getElementById('modal-file-type').value = file.type;
-                preview.innerText = `첨부됨: ${file.name}`;
-            };
-            reader.readAsDataURL(file);
-        };
-
-        window.openAddModal = function(status) {
-            document.getElementById('modal-title').innerText = "새 업무 카드 추가";
-            document.getElementById('modal-card-id').value = "";
-            document.getElementById('modal-card-status').value = status;
-            document.getElementById('modal-card-name').value = "";
-            document.getElementById('modal-card-desc').value = "";
-            document.getElementById('modal-card-assignee').value = myName;
-            document.getElementById('modal-card-duedate').value = "";
-            document.getElementById('modal-card-file').value = "";
-            document.getElementById('modal-file-data').value = "";
-            document.getElementById('modal-file-name').value = "";
-            document.getElementById('modal-file-type').value = "";
-            document.getElementById('file-preview').innerText = "";
-            document.getElementById('modal-delete-btn').style.display = "none";
-            document.getElementById('card-modal').style.display = "flex";
-        };
-
-        window.openEditModal = function(cardId) {
-            const card = cardsData[cardId];
-            if (!card) return;
-
-            document.getElementById('modal-title').innerText = "업무 카드 수정";
-            document.getElementById('modal-card-id').value = cardId;
-            document.getElementById('modal-card-status').value = card.status;
-            document.getElementById('modal-card-name').value = card.title || "";
-            document.getElementById('modal-card-desc').value = card.desc || "";
-            document.getElementById('modal-card-assignee').value = card.assignee || "";
-            document.getElementById('modal-card-duedate').value = card.dueDate || "";
-            document.getElementById('modal-card-file').value = "";
-            document.getElementById('modal-file-data').value = card.fileData || "";
-            document.getElementById('modal-file-name').value = card.fileName || "";
-            document.getElementById('modal-file-type').value = card.fileType || "";
-            document.getElementById('file-preview').innerText = card.fileName ? `기존 파일: ${card.fileName}` : "";
-            document.getElementById('modal-delete-btn').style.display = "block";
-            document.getElementById('card-modal').style.display = "flex";
-        };
-
-        window.closeModal = function() {
-            document.getElementById('card-modal').style.display = "none";
-        };
-
-        window.saveCard = async function() {
-            const id = document.getElementById('modal-card-id').value;
-            const status = document.getElementById('modal-card-status').value;
-            const title = document.getElementById('modal-card-name').value.trim();
-            const desc = document.getElementById('modal-card-desc').value.trim();
-            const assignee = document.getElementById('modal-card-assignee').value.trim();
-            const dueDate = document.getElementById('modal-card-duedate').value;
-            const fileData = document.getElementById('modal-file-data').value;
-            const fileName = document.getElementById('modal-file-name').value;
-            const fileType = document.getElementById('modal-file-type').value;
-
-            if (!title) {
-                alert("제목을 입력해주세요.");
-                return;
-            }
-
-            try {
-                const cardPayload = { title, desc, assignee, dueDate, fileData, fileName, fileType };
-                if (id) {
-                    await updateDoc(doc(db, "cards", id), cardPayload);
-                } else {
-                    cardPayload.status = status;
-                    cardPayload.createdAt = serverTimestamp();
-                    await addDoc(collection(db, "cards"), cardPayload);
-                }
-                closeModal();
-            } catch (error) {
-                console.error("저장 오류:", error);
-            }
-        };
-
-        window.deleteCard = async function() {
-            const id = document.getElementById('modal-card-id').value;
-            if (!id) return;
-            if (confirm("정말로 이 업무 카드를 삭제하시겠습니까?")) {
-                try {
-                    await deleteDoc(doc(db, "cards", id));
-                    closeModal();
-                } catch (error) {
-                    console.error("삭제 오류:", error);
-                }
-            }
-        };
-
-        window.allowDrop = function(ev) { ev.preventDefault(); };
-
-        window.drop = async function(ev) {
-          ev.preventDefault();
-          const cardId = ev.dataTransfer.getData("cardId");
-          let targetList = ev.target;
-          
-          while (targetList && !targetList.classList.contains('card-list')) {
-            targetList = targetList.parentElement;
-          }
-
-          if (targetList) {
-            const newStatus = targetList.id;
-            try {
-              await updateDoc(doc(db, "cards", cardId), { status: newStatus });
-            } catch (error) {
-              console.error("이동 오류:", error);
-            }
-          }
-        };
-
-        let isFirstCardLoad = true;
-        const qCards = query(collection(db, "cards"), orderBy("createdAt", "asc"));
-        onSnapshot(qCards, (snapshot) => {
-          document.getElementById('todo').innerHTML = '';
-          document.getElementById('doing').innerHTML = '';
-          document.getElementById('done').innerHTML = '';
-
-          snapshot.docChanges().forEach((change) => {
-            if (change.type === "added" && !isFirstCardLoad) {
-                const newCard = change.doc.data();
-                if (isUserAway() && newCard.assignee !== myName) {
-                    triggerDesktopNotification("📌 새 업무 카드 추가됨", `${newCard.assignee || '누군가'}: ${newCard.title}`, false);
-                }
-            }
-          });
-
-          snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            const cardId = docSnap.id;
-            cardsData[cardId] = data;
-
-            const cardEl = document.createElement('div');
-            cardEl.className = 'card';
-            cardEl.draggable = true;
-
-            let metaHTML = '';
-            if (data.assignee) metaHTML += `<span class="card-badge">👤 ${data.assignee}</span>`;
-            if (data.dueDate) metaHTML += `<span class="card-badge">📅 ${data.dueDate}</span>`;
-            if (data.fileName) metaHTML += `<span class="card-badge">📁 파일첨부</span>`;
-            if (data.createdAt) metaHTML += `<span class="card-badge">🕒 ${formatTime(data.createdAt)}</span>`;
-
-            cardEl.innerHTML = `
-                <div class="card-title">${formatMessageText(data.title)}</div>
-                <div class="card-meta">${metaHTML}</div>
-            `;
-
-            cardEl.addEventListener('click', (e) => {
-                if (e.target.tagName !== 'A') {
-                    openEditModal(cardId);
-                }
-            });
-
-            cardEl.addEventListener('dragstart', (e) => {
-              e.stopPropagation();
-              e.dataTransfer.setData("cardId", cardId);
-            });
-
-            const targetList = document.getElementById(data.status);
-            if (targetList) {
-              targetList.appendChild(cardEl);
-            }
-          });
-
-          isFirstCardLoad = false;
-        });
-    </script>
+        contextMenu.style.top = `${e.clientY}px`;
+        contextMenu.style.left = `${e.clientX}px`;
+        contextMenu.classList.add('active');
+      });
+
+      chatMessages.appendChild(msgWrapper);
+    });
+
+    isFirstChatLoad = false;
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  });
+}
+
+const cardsData = {};
+
+window.handleModalFileUpload = function(event) {
+  const file = event.target.files[0];
+  const preview = document.getElementById('file-preview');
+  if (!file) return;
+
+  if (file.size > 1024 * 1024 * 3) {
+    alert("파일 크기는 최대 3MB까지 첨부 가능합니다.");
+    event.target.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('modal-file-data').value = e.target.result;
+    document.getElementById('modal-file-name').value = file.name;
+    document.getElementById('modal-file-type').value = file.type;
+    preview.innerText = `첨부됨: ${file.name}`;
+  };
+  reader.readAsDataURL(file);
+};
+
+window.openAddModal = function(status) {
+  document.getElementById('modal-title').innerText = "새 업무 카드 추가";
+  document.getElementById('modal-card-id').value = "";
+  document.getElementById('modal-card-status').value = status;
+  document.getElementById('modal-card-name').value = "";
+  document.getElementById('modal-card-desc').value = "";
+  document.getElementById('modal-card-assignee').value = myName;
+  document.getElementById('modal-card-duedate').value = "";
+  document.getElementById('modal-card-file').value = "";
+  document.getElementById('modal-file-data').value = "";
+  document.getElementById('modal-file-name').value = "";
+  document.getElementById('modal-file-type').value = "";
+  document.getElementById('file-preview').innerText = "";
+  document.getElementById('modal-delete-btn').style.display = "none";
+  document.getElementById('card-modal').style.display = "flex";
+};
+
+window.openEditModal = function(cardId) {
+  const card = cardsData[cardId];
+  if (!card) return;
+  document.getElementById('modal-title').innerText = "업무 카드 수정";
+  document.getElementById('modal-card-id').value = cardId;
+  document.getElementById('modal-card-status').value = card.status;
+  document.getElementById('modal-card-name').value = card.title || "";
+  document.getElementById('modal-card-desc').value = card.desc || "";
+  document.getElementById('modal-card-assignee').value = card.assignee || "";
+  document.getElementById('modal-card-duedate').value = card.dueDate || "";
+  document.getElementById('modal-card-file').value = "";
+  document.getElementById('modal-file-data').value = card.fileData || "";
+  document.getElementById('modal-file-name').value = card.fileName || "";
+  document.getElementById('modal-file-type').value = card.fileType || "";
+  document.getElementById('file-preview').innerText = card.fileName ? `기존 파일: ${card.fileName}` : "";
+  document.getElementById('modal-delete-btn').style.display = "block";
+  document.getElementById('card-modal').style.display = "flex";
+};
+
+window.closeModal = function() {
+  document.getElementById('card-modal').style.display = "none";
+};
+
+window.saveCard = async function() {
+  const id = document.getElementById('modal-card-id').value;
+  const status = document.getElementById('modal-card-status').value;
+  const title = document.getElementById('modal-card-name').value.trim();
+  const desc = document.getElementById('modal-card-desc').value.trim();
+  const assignee = document.getElementById('modal-card-assignee').value.trim();
+  const dueDate = document.getElementById('modal-card-duedate').value;
+  const fileData = document.getElementById('modal-file-data').value;
+  const fileName = document.getElementById('modal-file-name').value;
+  const fileType = document.getElementById('modal-file-type').value;
+
+  if (!title) {
+    alert("제목을 입력해주세요.");
+    return;
+  }
+
+  try {
+    const cardPayload = { title, desc, assignee, dueDate, fileData, fileName, fileType };
+    if (id) {
+      await updateDoc(doc(db, "cards", id), cardPayload);
+    } else {
+      cardPayload.status = status;
+      cardPayload.createdAt = serverTimestamp();
+      await addDoc(collection(db, "cards"), cardPayload);
+    }
+    closeModal();
+  } catch (error) {
+    console.error("저장 오류:", error);
+  }
+};
+
+window.deleteCard = async function() {
+  const id = document.getElementById('modal-card-id').value;
+  if (!id) return;
+  if (confirm("정말로 이 업무 카드를 삭제하시겠습니까?")) {
+    try {
+      await deleteDoc(doc(db, "cards", id));
+      closeModal();
+    } catch (error) {
+      console.error("삭제 오류:", error);
+    }
+  }
+};
+
+window.allowDrop = function(ev) { ev.preventDefault(); };
+window.drop = async function(ev) {
+  ev.preventDefault();
+  const cardId = ev.dataTransfer.getData("cardId");
+  let targetList = ev.target;
+  while (targetList && !targetList.classList.contains('card-list')) {
+    targetList = targetList.parentElement;
+  }
+  if (targetList) {
+    const newStatus = targetList.id;
+    try {
+      await updateDoc(doc(db, "cards", cardId), { status: newStatus });
+    } catch (error) {
+      console.error("이동 오류:", error);
+    }
+  }
+};
+
+let isFirstCardLoad = true;
+const qCards = query(collection(db, "cards"), orderBy("createdAt", "asc"));
+onSnapshot(qCards, (snapshot) => {
+  document.getElementById('todo').innerHTML = '';
+  document.getElementById('doing').innerHTML = '';
+  document.getElementById('done').innerHTML = '';
+
+  snapshot.docChanges().forEach((change) => {
+    if (change.type === "added" && !isFirstCardLoad) {
+      const newCard = change.doc.data();
+      if (isUserAway() && newCard.assignee !== myName) {
+        triggerDesktopNotification("새 업무 카드 추가됨", `${newCard.assignee || '누군가'}: ${newCard.title}`, false);
+      }
+    }
+  });
+
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    const cardId = docSnap.id;
+    cardsData[cardId] = data;
+
+    const cardEl = document.createElement('div');
+    cardEl.className = 'card';
+    cardEl.draggable = true;
+
+    let metaHTML = '';
+    if (data.assignee) metaHTML += `<span class="card-badge">${data.assignee}</span>`;
+    if (data.dueDate) metaHTML += `<span class="card-badge">${data.dueDate}</span>`;
+    if (data.fileName) metaHTML += '<span class="card-badge">파일첨부</span>';
+    if (data.createdAt) metaHTML += `<span class="card-badge">${formatTime(data.createdAt)}</span>`;
+
+    cardEl.innerHTML = `
+      <div class="card-title">${formatMessageText(data.title)}</div>
+      <div class="card-meta">${metaHTML}</div>
+    `;
+
+    cardEl.addEventListener('click', (e) => {
+      if (e.target.tagName !== 'A') {
+        openEditModal(cardId);
+      }
+    });
+
+    cardEl.addEventListener('dragstart', (e) => {
+      e.stopPropagation();
+      e.dataTransfer.setData("cardId", cardId);
+    });
+
+    const targetList = document.getElementById(data.status);
+    if (targetList) {
+      targetList.appendChild(cardEl);
+    }
+  });
+
+  isFirstCardLoad = false;
+});
+</script>
 </body>
 </html>
