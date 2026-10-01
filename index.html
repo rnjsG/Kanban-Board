@@ -1260,11 +1260,6 @@ const mentionDropdown = document.getElementById('mention-dropdown');
 
 import React, { useState, useRef } from 'react';
 
-const ChatImageUploader = () => {
-  const [messages, setMessages] = useState([]);
-  const [inputText, setInputText] = useState('');
-  const [isDragging, setIsDragging] = useState(false);
-  const dragCounter = useRef(0);
 
  // 이미지 클립보드 붙여넣기(Paste) 기능
 chatInput.addEventListener('paste', (e) => {
