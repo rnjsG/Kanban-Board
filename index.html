@@ -619,6 +619,31 @@ body {
   font-weight: 700;
 }
 
+/* 첨부파일/이미지 전송 전 미리보기 바 */
+.file-preview-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  background: #EFF6FF;
+  border-left: 3px solid #2563EB;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #1E40AF;
+}
+
+.file-preview-bar.active {
+  display: flex;
+}
+
+.file-preview-cancel-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #3B82F6;
+  font-weight: 700;
+}
+
 .chat-tools-row {
   display: flex;
   align-items: center;
@@ -849,12 +874,18 @@ body {
         <button class="reply-cancel-btn" onclick="cancelReplyMode()">X</button>
       </div>
 
+      <!-- 첨부 예정 파일/이미지 미리보기 영역 -->
+      <div class="file-preview-bar" id="file-preview-bar">
+        <span id="file-preview-text">📷 첨부파일 대기 중</span>
+        <button class="file-preview-cancel-btn" onclick="cancelPendingFile()">X</button>
+      </div>
+
       <!-- 총 40개의 확장된 이모티콘 피커 -->
       <div class="emoji-picker-box" id="emoji-picker">
         <!-- 기본 & 긍정 -->
         <button type="button" class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
         <button type="button" class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
-        <button type="button" class="emoji-btn" onclick="insertEmoji('❤️️')">❤️</button>
+        <button type="button" class="emoji-btn" onclick="insertEmoji('❤')">❤️</button>
         <button type="button" class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
         <button type="button" class="emoji-btn" onclick="insertEmoji('🎉')">🎉</button>
         <button type="button" class="emoji-btn" onclick="insertEmoji('🙏')">🙏</button>
@@ -1014,6 +1045,7 @@ let onlineUsersList = [];
 let chatUnsubscribe = null;
 
 let activeReplyTarget = null;
+let pendingFilePayload = null; // 대기 중인 이미지/파일 저장 변수
 let contextTargetMsg = null;
 
 const authModal = document.getElementById('auth-modal');
@@ -1258,39 +1290,48 @@ window.insertEmoji = function(emoji) {
 const chatInput = document.getElementById('chat-input');
 const mentionDropdown = document.getElementById('mention-dropdown');
 
-import React, { useState, useRef } from 'react';
-
-
- // 이미지 클립보드 붙여넣기(Paste) 기능
+// 이미지 클립보드 붙여넣기(Paste) 기능 -> 즉시 전송하지 않고 전송 대기 상태로 세팅
 chatInput.addEventListener('paste', (e) => {
-  const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-  for (let index = 0; index < items.length; index++) {
-    const item = items[index];
-    if (item.type.indexOf('image') !== -1) {
-      const file = item.getAsFile();
-      if (!file) continue;
+  const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+  for (let index = 0; index < items.length; index++) {
+    const item = items[index];
+    if (item.type.indexOf('image') !== -1) {
+      const file = item.getAsFile();
+      if (!file) continue;
 
-      if (file.size > 1024 * 1024 * 3) {
-        alert("붙여넣은 이미지 크기는 최대 3MB까지 가능합니다.");
-        return;
-      }
+      if (file.size > 1024 * 800) {
+        alert("붙여넣은 이미지 크기는 최대 800KB까지 가능합니다.");
+        return;
+      }
 
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        sendMessage({
-          data: evt.target.result,
-          name: file.name || `pasted-image-${Date.now()}.png`,
-          type: file.type
-        });
-      };
-      reader.readAsDataURL(file);
-      e.preventDefault();
-      break;
-    }
-  }
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        setPendingFile({
+          data: evt.target.result,
+          name: file.name || `pasted-image-${Date.now()}.png`,
+          type: file.type
+        });
+      };
+      reader.readAsDataURL(file);
+      e.preventDefault();
+      break;
+    }
+  }
 });
 
-export default ChatImageUploader;
+function setPendingFile(payload) {
+  pendingFilePayload = payload;
+  const fileBar = document.getElementById('file-preview-bar');
+  const fileText = document.getElementById('file-preview-text');
+  fileText.innerText = `📎 첨부 대기중: ${payload.name}`;
+  fileBar.classList.add('active');
+  chatInput.focus();
+}
+
+window.cancelPendingFile = function() {
+  pendingFilePayload = null;
+  document.getElementById('file-preview-bar').classList.remove('active');
+};
 
 chatInput.addEventListener('input', (e) => {
   const value = chatInput.value;
@@ -1437,12 +1478,14 @@ async function editMessage(msgId, currentText) {
 const sendBtn = document.getElementById('send-btn');
 const chatMessages = document.getElementById('chat-messages');
 
-async function sendMessage(filePayload = null) {
+async function sendMessage() {
   if (!myName) {
     alert("로그인이 필요합니다.");
     return;
   }
   const text = chatInput.value.trim();
+  const filePayload = pendingFilePayload;
+
   if (text === "" && !filePayload) return;
 
   chatInput.value = "";
@@ -1465,6 +1508,7 @@ async function sendMessage(filePayload = null) {
       msgData.fileData = filePayload.data;
       msgData.fileName = filePayload.name;
       msgData.fileType = filePayload.type;
+      cancelPendingFile();
     }
     await addDoc(collection(db, "messages"), msgData);
   } catch (error) {
@@ -1492,15 +1536,15 @@ window.handleChatFileUpload = function(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  if (file.size > 1024 * 1024 * 3) {
-    alert("파일 크기는 최대 3MB까지 첨부 가능합니다.");
+  if (file.size > 1024 * 800) {
+    alert("파일 크기는 최대 800KB까지 첨부 가능합니다.");
     event.target.value = "";
     return;
   }
 
   const reader = new FileReader();
   reader.onload = function(e) {
-    sendMessage({
+    setPendingFile({
       data: e.target.result,
       name: file.name,
       type: file.type
@@ -1636,8 +1680,8 @@ window.handleModalFileUpload = function(event) {
   const preview = document.getElementById('file-preview');
   if (!file) return;
 
-  if (file.size > 1024 * 1024 * 3) {
-    alert("파일 크기는 최대 3MB까지 첨부 가능합니다.");
+  if (file.size > 1024 * 800) {
+    alert("파일 크기는 최대 800KB까지 첨부 가능합니다.");
     event.target.value = "";
     return;
   }
@@ -1784,7 +1828,6 @@ onSnapshot(qCards, (snapshot) => {
     if (data.dueDate) metaHTML += `<span class="card-badge">📅 ${data.dueDate}</span>`;
     if (data.fileName) metaHTML += `<span class="card-badge">📁 파일첨부</span>`;
     if (data.createdAt) metaHTML += `<span class="card-badge">🕒 ${formatTime(data.createdAt)}</span>`;
-
 
     cardEl.innerHTML = `
       <div class="card-title">${formatMessageText(data.title)}</div>
