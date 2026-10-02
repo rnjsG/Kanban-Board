@@ -1172,7 +1172,7 @@ function removePresenceBeacon() {
   navigator.sendBeacon(url + "?method=DELETE");
 }
 
-setInterval(updatePresence, 60000);
+setInterval(updatePresence, 180000);
 window.addEventListener('pagehide', removePresenceBeacon);
 window.addEventListener('beforeunload', removePresenceBeacon);
 
