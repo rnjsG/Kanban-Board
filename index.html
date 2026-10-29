@@ -1639,6 +1639,8 @@ window.handleChatFileUpload = function(event) {
 function startChatListener() {
   if (chatUnsubscribe) chatUnsubscribe();
   let isFirstChatLoad = true;
+  const pageLoadTime = Date.now(); // 새로고침/페이지 접속 시점 기록
+
   const qChat = query(
     collection(db, "messages"),
     where("createdAt", ">=", myJoinTimestamp),
@@ -1650,8 +1652,15 @@ function startChatListener() {
     snapshot.docChanges().forEach((change) => {
       if (change.type === "added" && !isFirstChatLoad) {
         const newMsg = change.doc.data();
-        const isMentioned = newMsg.text && newMsg.text.includes(`@${myName}`);
-        if (newMsg.sender !== myName) {
+        
+        // 메시지 작성 시간 체크 (없을 경우 현재시간 처리)
+        const msgTime = newMsg.createdAt && newMsg.createdAt.toDate 
+          ? newMsg.createdAt.toDate().getTime() 
+          : Date.now();
+
+        // [수정] 접속 시점(pageLoadTime) 이후의 진짜 신규 메시지일 때만 알림 전송
+        if (msgTime > pageLoadTime && newMsg.sender !== myName) {
+          const isMentioned = newMsg.text && newMsg.text.includes(`@${myName}`);
           if (isMentioned) {
             triggerDesktopNotification(`📣 ${newMsg.sender}님이 나를 언급했습니다!`, newMsg.text, true);
           } else if (isUserAway()) {
