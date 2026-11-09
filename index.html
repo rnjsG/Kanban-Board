@@ -1381,8 +1381,8 @@ chatInput.addEventListener('paste', (e) => {
       const file = item.getAsFile();
       if (!file) continue;
 
-      if (file.size > 1024 * 800) {
-        alert("붙여넣은 이미지 크기는 최대 800KB까지 가능합니다.");
+      if (file.size > 1024 * 1024) {
+        alert("붙여넣은 이미지 크기는 최대 100KB까지 가능합니다.");
         return;
       }
 
@@ -1618,8 +1618,8 @@ window.handleChatFileUpload = function(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  if (file.size > 1024 * 800) {
-    alert("파일 크기는 최대 800KB까지 첨부 가능합니다.");
+  if (file.size > 1024 * 1024) {
+    alert("파일 크기는 최대 1000KB까지 첨부 가능합니다.");
     event.target.value = "";
     return;
   }
@@ -1771,8 +1771,8 @@ window.handleModalFileUpload = function(event) {
   const preview = document.getElementById('file-preview');
   if (!file) return;
 
-  if (file.size > 1024 * 800) {
-    alert("파일 크기는 최대 800KB까지 첨부 가능합니다.");
+  if (file.size > 1024 * 1024) {
+    alert("파일 크기는 최대 1000KB까지 첨부 가능합니다.");
     event.target.value = "";
     return;
   }
